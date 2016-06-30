@@ -4,17 +4,17 @@ import { DataConnection, DataContract } from './DataObject';
 import { registeredClasses } from '../shared/DataObject';
 
 export class HTTP {
-	private static initialized: Map<String, DataConnection<DataContract>> =
-		new Map<String, DataConnection<DataContract>>();
-
 	public static handle(
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
-	    class_idx: number = 2
-	): void {
+		class_idx: number = 2
+	): Promise<string> {
 		const urlData = requestData.url.split('/');
 		const id_idx = class_idx + 1;
 		const idx: string = urlData[class_idx];
+
+		responseData.statusCode = 500;
+		responseData.setHeader('content-type', 'application/json');
 
 		if (idx) {
 			let id: number = urlData[id_idx] && Number.parseInt(urlData[id_idx], 10);
@@ -26,52 +26,53 @@ export class HTTP {
 			let contract: DataConnection<DataContract>;
 			if (HTTP.initialized[idx]) {
 				contract = HTTP.initialized[idx];
-			} else if(registeredClasses[idx]) {
+			} else if (registeredClasses[idx]) {
 				HTTP.initialized[idx] = new registeredClasses[idx]();
 				contract = HTTP.initialized[idx];
 			}
 
-			let sessionLoad = Promise.resolve();
-
-			sessionLoad.then(() => {
-				if (requestData.method === 'GET' && id) {
-					if (contract) {
-						HTTP.GET(id, requestData, responseData, contract);
-					} else {
-						HTTP.respondNotFound(responseData);
-					}
-				} else if (requestData.method === 'POST' && !id) {
-					if (contract) {
-						HTTP.POST(requestData, responseData, contract);
-					} else {
-						HTTP.respondNotFound(responseData);
-					}
-				} else if (requestData.method === 'PUT') {
-					if (contract) {
-						HTTP.PUT(id, requestData, responseData, contract);
-					} else {
-						HTTP.respondNotFound(responseData);
-					}
-				} else if (requestData.method === 'DELETE' && id) {
-					if (contract) {
-						HTTP.DELETE(id, requestData, responseData, contract);
-					} else {
-						HTTP.respondNotFound(responseData);
-					}
+			if (requestData.method === 'GET' && id) {
+				if (contract) {
+					return HTTP.GET(id, requestData, responseData, contract);
 				} else {
-					HTTP.respondNotAllowed(responseData);
+					return HTTP.respondNotFound(responseData);
 				}
-			});
+			} else if (requestData.method === 'POST' && !id) {
+				if (contract) {
+					return HTTP.POST(requestData, responseData, contract);
+				} else {
+					return HTTP.respondNotFound(responseData);
+				}
+			} else if (requestData.method === 'PUT') {
+				if (contract) {
+					return HTTP.PUT(id, requestData, responseData, contract);
+				} else {
+					return HTTP.respondNotFound(responseData);
+				}
+			} else if (requestData.method === 'DELETE' && id) {
+				if (contract) {
+					return HTTP.DELETE(id, requestData, responseData, contract);
+				} else {
+					return HTTP.respondNotFound(responseData);
+				}
+			} else {
+				return HTTP.respondNotAllowed(responseData);
+			}
+		} else {
+			return HTTP.respondNotAllowed(responseData);
 		}
 	}
+
+	private static initialized: Map<String, DataConnection<DataContract>> =
+		new Map<String, DataConnection<DataContract>>();
 
 	private static GET(
 		id: number,
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
-	): void {
-		contract.fetch(id).then(
+	): Promise<string> {
+		return contract.fetch(id).then(
 			(data: DataContract) => HTTP.respondOk(responseData, data.serialize()),
 			() => HTTP.respondNotFound(responseData)
 		);
@@ -81,13 +82,21 @@ export class HTTP {
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
-	) {
-		HTTP.fetchBody(requestData, responseData)
+	): Promise<string> {
+		return HTTP.fetchBody(requestData, responseData)
 			.then((bodyData: any) => {
 				return contract.search(bodyData);
 			})
 			.then((results: DataContract[]) => {
-				HTTP.respondOk(responseData, JSON.stringify(results));
+				return HTTP.respondOk(responseData, JSON.stringify(results));
+			})
+			.catch((err: any) => {
+				if (err.message && err.message === 'Malformed JSON') {
+					responseData.statusCode = 412;
+					return '"Malformed JSON Details: ' + err.error.message + '"';
+				} else {
+					return Promise.reject(err);
+				}
 			});
 	}
 
@@ -96,7 +105,7 @@ export class HTTP {
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
-	) {
+	): Promise<string> {
 		let dataPromise: Promise<DataContract>;
 		if (id) {
 			dataPromise = contract.fetch(id);
@@ -105,17 +114,25 @@ export class HTTP {
 				return resolve(contract.create());
 			});
 		}
-		dataPromise.then(
+		return dataPromise.then(
 			(data: DataContract) => {
-				HTTP.fetchBody(requestData, responseData)
+				return HTTP.fetchBody(requestData, responseData)
 					.then((bodyData: any) => {
 						data.loadData(bodyData);
-						data.save().then(() => {
-							responseData.end(data.serialize());
+						return data.save().then(() => {
+							return HTTP.respondOk(responseData, data.serialize());
 						}, () => {
 							responseData.statusCode = 412;
-							responseData.end('Save Failed');
+							return '"Save Failed"';
 						});
+					})
+					.catch((err: any) => {
+						if (err.message && err.message === 'Malformed JSON') {
+							responseData.statusCode = 412;
+							return '"Malformed JSON Details: ' + err.error.message + '"';
+						} else {
+							return Promise.reject(err);
+						}
 					});
 			},
 			() => HTTP.respondNotFound(responseData)
@@ -127,33 +144,34 @@ export class HTTP {
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
-	) {
-		contract.fetch(id).then((data: DataContract) => {
-			data.delete().then(
-				() => HTTP.respondOk(responseData),
+	): Promise<string> {
+		return contract.fetch(id).then((data: DataContract) => {
+			return data.delete().then(
+				() => HTTP.respondOk(responseData, '"Delete Success"'),
 				() => {
 					responseData.statusCode = 412;
-					responseData.end('Delete Failed');
+					return '"Delete Failed"';
 				}
 			);
 		}, () => {
 			responseData.statusCode = 404;
-			responseData.end('Resource Not Found');
+			return '"Resource Not Found"';
 		});
 	}
 
-	private static respondNotAllowed(responseData: http.ServerResponse) {
+	private static respondNotAllowed(responseData: http.ServerResponse): Promise<string> {
 		responseData.statusCode = 405;
-		responseData.end('Method Not Allowed');
+		return Promise.resolve('Method Not Allowed');
 	}
 
-	private static respondNotFound(responseData: http.ServerResponse) {
+	private static respondNotFound(responseData: http.ServerResponse): Promise<string> {
 		responseData.statusCode = 404;
-		responseData.end('Resource Not Found');
+		return Promise.resolve('Resource Not Found');
 	}
 
-	private static respondOk(responseData: http.ServerResponse, data?: string) {
-		responseData.setHeader('content-type', 'application/json');
+	private static respondOk(responseData: http.ServerResponse, data?: string): Promise<string> {
+		responseData.statusCode = 200;
+		return Promise.resolve(data);
 	}
 
 	private static fetchBody(requestData: http.IncomingMessage, responseData: http.ServerResponse): Promise<String> {
@@ -168,9 +186,7 @@ export class HTTP {
 				try {
 					bodyData = JSON.parse(body);
 				} catch (e) {
-					responseData.statusCode = 412;
-					responseData.end('Malformed JSON');
-					reject('Malformed JSON');
+					reject({error: e, message: 'Malformed JSON'});
 				}
 				if (bodyData) {
 					resolve(bodyData);

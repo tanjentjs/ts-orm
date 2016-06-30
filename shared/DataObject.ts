@@ -25,7 +25,7 @@ export const registeredClasses: registeredClassMap =
  */
 export function register(moduleId: string) {
 	return (target: new (...args: any[]) => IDataConnection<IDataContract>): any => {
-		const idx = moduleId + (<any> target.constructor).name;
+		const idx = moduleId + '.' + (<any> target).name;
 		registeredClasses[idx] = target;
 		Reflect.defineMetadata('ORM:registeredIndex', idx, target);
 	};

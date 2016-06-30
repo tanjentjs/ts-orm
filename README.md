@@ -14,7 +14,14 @@ npm install --save tanjentjs-ts-orm typescript typings
 typings install --save sequelize
 typings install --save --global env~node dt~es6-shim
 ```
-
+Install a database driver supported by [sequelize](http://docs.sequelizejs.com/en/latest/docs/getting-started/) As
+of writing this you need one of the following
+```bash
+npm install --save pg pg-hstore
+npm install --save mysql
+npm install --save sqlite3
+npm install --save tedious // MSSQL
+```
 Usage
 =====
 
