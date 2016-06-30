@@ -18,24 +18,7 @@ typings install --save --global env~node dt~es6-shim
 Usage
 =====
 
-node
-----
-1. In your index file add the following
-    ```ts
-    import {connect} from 'tanjentjs-ts-orm/node';
-
-    connect('database', 'username', 'password')
-    ```
-    Note: You can also add a fourth paramter of type [sequelize.Options](http://docs.sequelizejs.com/en/latest/api/sequelize/)
-2. Create your object file, see the [example](node/example.ts)
-
-    Note: The @register and @Injectable lines are only necessary if using the api layer
-3. Use the DataConnection object, it should have methods which return promises to your
-    DataContract object
-
-node-api
---------
-TBD
+Please checkout the [wiki](../../wiki),
 
 Requests, Bugs, and Roadmap
 ===========================
