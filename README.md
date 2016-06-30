@@ -10,7 +10,7 @@ and will talk via an api.
 Installing
 ==========
 ```bash
-npm install --save tanjentjs-ts-orm
+npm install --save tanjentjs-ts-orm typescript typings
 typings install --save sequelize
 typings install --save --global env~node dt~es6-shim
 ```

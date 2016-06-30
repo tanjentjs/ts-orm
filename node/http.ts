@@ -1,96 +1,97 @@
 import * as http from 'http';
-import { Injectable, Injector } from '@angular/core';
 
 import { DataConnection, DataContract } from './DataObject';
 import { registeredClasses } from '../shared/DataObject';
 
-let injector: Injector = null;
-export function setInjector(inbound: Injector) {
-	injector = inbound;
-}
-
-@Injectable()
 export class HTTP {
-	public handle(
+	private static initialized: Map<String, DataConnection<DataContract>> =
+		new Map<String, DataConnection<DataContract>>();
+
+	public static handle(
 		requestData: http.IncomingMessage,
-		responseData: http.ServerResponse
+		responseData: http.ServerResponse,
+	    class_idx: number = 2
 	): void {
 		const urlData = requestData.url.split('/');
-		const idx: string = urlData[2];
+		const id_idx = class_idx + 1;
+		const idx: string = urlData[class_idx];
 
 		if (idx) {
-			let id: number = urlData[4] && Number.parseInt(urlData[4], 10);
+			let id: number = urlData[id_idx] && Number.parseInt(urlData[id_idx], 10);
 			// tslint:disable-next-line:triple-equals
-			if ((<any> id) != urlData[4]) {
+			if ((<any> id) != urlData[id_idx]) {
 				id = undefined;
 			}
 
 			let contract: DataConnection<DataContract>;
-			try {
-				contract = injector.get(registeredClasses[idx]);
-			} catch (e) { /* */ }
+			if (HTTP.initialized[idx]) {
+				contract = HTTP.initialized[idx];
+			} else if(registeredClasses[idx]) {
+				HTTP.initialized[idx] = new registeredClasses[idx]();
+				contract = HTTP.initialized[idx];
+			}
 
 			let sessionLoad = Promise.resolve();
 
 			sessionLoad.then(() => {
 				if (requestData.method === 'GET' && id) {
 					if (contract) {
-						this.GET(id, requestData, responseData, contract);
+						HTTP.GET(id, requestData, responseData, contract);
 					} else {
-						this.respondNotFound(responseData);
+						HTTP.respondNotFound(responseData);
 					}
 				} else if (requestData.method === 'POST' && !id) {
 					if (contract) {
-						this.POST(requestData, responseData, contract);
+						HTTP.POST(requestData, responseData, contract);
 					} else {
-						this.respondNotFound(responseData);
+						HTTP.respondNotFound(responseData);
 					}
 				} else if (requestData.method === 'PUT') {
 					if (contract) {
-						this.PUT(id, requestData, responseData, contract);
+						HTTP.PUT(id, requestData, responseData, contract);
 					} else {
-						this.respondNotFound(responseData);
+						HTTP.respondNotFound(responseData);
 					}
 				} else if (requestData.method === 'DELETE' && id) {
 					if (contract) {
-						this.DELETE(id, requestData, responseData, contract);
+						HTTP.DELETE(id, requestData, responseData, contract);
 					} else {
-						this.respondNotFound(responseData);
+						HTTP.respondNotFound(responseData);
 					}
 				} else {
-					this.respondNotAllowed(responseData);
+					HTTP.respondNotAllowed(responseData);
 				}
 			});
 		}
 	}
 
-	private GET(
+	private static GET(
 		id: number,
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
 	): void {
 		contract.fetch(id).then(
-			(data: DataContract) => this.respondOk(responseData, data.serialize()),
-			() => this.respondNotFound(responseData)
+			(data: DataContract) => HTTP.respondOk(responseData, data.serialize()),
+			() => HTTP.respondNotFound(responseData)
 		);
 	}
 
-	private POST(
+	private static POST(
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
 	) {
-		this.fetchBody(requestData, responseData)
+		HTTP.fetchBody(requestData, responseData)
 			.then((bodyData: any) => {
 				return contract.search(bodyData);
 			})
 			.then((results: DataContract[]) => {
-				this.respondOk(responseData, JSON.stringify(results));
+				HTTP.respondOk(responseData, JSON.stringify(results));
 			});
 	}
 
-	private PUT(
+	private static PUT(
 		id: number,
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
@@ -106,7 +107,7 @@ export class HTTP {
 		}
 		dataPromise.then(
 			(data: DataContract) => {
-				this.fetchBody(requestData, responseData)
+				HTTP.fetchBody(requestData, responseData)
 					.then((bodyData: any) => {
 						data.loadData(bodyData);
 						data.save().then(() => {
@@ -117,11 +118,11 @@ export class HTTP {
 						});
 					});
 			},
-			() => this.respondNotFound(responseData)
+			() => HTTP.respondNotFound(responseData)
 		);
 	}
 
-	private DELETE(
+	private static DELETE(
 		id: number,
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse,
@@ -129,7 +130,7 @@ export class HTTP {
 	) {
 		contract.fetch(id).then((data: DataContract) => {
 			data.delete().then(
-				() => this.respondOk(responseData),
+				() => HTTP.respondOk(responseData),
 				() => {
 					responseData.statusCode = 412;
 					responseData.end('Delete Failed');
@@ -141,21 +142,21 @@ export class HTTP {
 		});
 	}
 
-	private respondNotAllowed(responseData: http.ServerResponse) {
+	private static respondNotAllowed(responseData: http.ServerResponse) {
 		responseData.statusCode = 405;
 		responseData.end('Method Not Allowed');
 	}
 
-	private respondNotFound(responseData: http.ServerResponse) {
+	private static respondNotFound(responseData: http.ServerResponse) {
 		responseData.statusCode = 404;
 		responseData.end('Resource Not Found');
 	}
 
-	private respondOk(responseData: http.ServerResponse, data?: string) {
+	private static respondOk(responseData: http.ServerResponse, data?: string) {
 		responseData.setHeader('content-type', 'application/json');
 	}
 
-	private fetchBody(requestData: http.IncomingMessage, responseData: http.ServerResponse): Promise<String> {
+	private static fetchBody(requestData: http.IncomingMessage, responseData: http.ServerResponse): Promise<String> {
 		return new Promise((resolve, reject) => {
 			let body: string = '';
 			let bodyData: any;
