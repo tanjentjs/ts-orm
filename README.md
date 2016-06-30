@@ -14,18 +14,20 @@ Development
 
 Setup
 -----
-# `git clone git@github.com:tanjentjs/ts-orm.git`
-# `npm install`
+```Bash
+git clone git@github.com:tanjentjs/ts-orm.git
+npm install
+```
 
 Contributing
 ------------
-# You should run `npm run lint` before creating the pr and fix any issues
-# Create the merge request
-# Make sure travis ci passes
+1. You should run `npm run lint` before creating the pr and fix any issues
+1. Create the merge request
+1. Make sure travis ci passes
 
 Releasing
 ---------
-# Create a tag in github using semantic versioning
-# Travis CI should run the build and push it to npm
+1. Create a tag in github using semantic versioning
+1. Travis CI should run the build and push it to npm
 
 Project files are included for jetbrains IDEs, just load the project and start developing
