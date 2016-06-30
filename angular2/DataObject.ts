@@ -1,5 +1,6 @@
-import { IDataConnection, IDataContract, register as sharedRegister } from '../shared/DataObject';
+import { IDataConnection, IDataContract } from '../shared/DataObject';
 import { Http, Headers, Response, RequestOptions } from '@angular/http';
+import { Injector } from '@angular/core';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
@@ -11,7 +12,6 @@ import {AuthHandler} from './AuthHandler';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
-import { Inject, Injectable } from '@angular/core';
 
 export abstract class DataContract implements IDataContract {
 	private get fields(): string[] {
@@ -73,7 +73,7 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	private auth: AuthHandler = this.injector && this.injector.get(AuthHandler);
 
 	constructor(private injector?: Injector) {
-		if(!this.injector) {
+		if (!this.injector) {
 			throw 'You must pass in the angular injector!';
 		}
 	}
@@ -84,11 +84,6 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	}
 
 	public fetch(id: number): Promise<T> {
-		try {
-			console.log(this.auth.setOptions(getOptions()));
-		}catch(e) {
-			console.log(e);
-		}
 		return this.http
 			.get(
 				this.baseUri + '/' + id,
