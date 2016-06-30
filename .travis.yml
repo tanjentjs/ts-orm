@@ -1,3 +1,10 @@
 language: node_js
 node_js:
-- "5.10"
+- '5.10'
+after_success: 'npm pack
+deploy:
+  - provider: npm
+    api_key:
+      secure: qwWIXiqx/ia1quEzg94AaCRc07xJLxfPhpjtciMlRbV4CBLLf/dAK59+YFTJ8KO97G1AgcIhSItqyvP/eI1lvl7CzNar5KSQFaP2IPHekyOUdw6AfsI89r2EC44efQdKpkk8fGM5xw6JMiPyJOhghAs/bTixrM4eIh8ckxHvfU+cn9ghoe76O/jnEZL90E2UnZJa815uzjt9+ZdZs5JrTf/MXuzVfI20RV15tp4+uUg1SQEyUUoaugROEMMKVxJs36sEZPRHODYIA8q6f8JtpSoRH766umJ3dtWYmaoe26hFGb+6/fn6FzDA5SVG3VKlfE4K3Is2JByIpGj5+3aMXliqBaVOsg6M3QVfDmlB5d0+cMeu9hscT7a1ofiF6ZJeoKxTe9BIR3/pWVJY9aNvQa832wjcHs1ylBy2aJBaZPt9Uye3Czi4PcfaBPVeAoDYONKtf6NNhhS/v0xW7fcjOghbJITZu8JWWmJ4n/KJr2v2Gc/QMiTDEVrg/wCkoEUQG3RH73XSfNWKcEkb8ARcOqIHG0jHFUThoc7h8W8oLwd2r8UYpAuwCYwCsS5dR7wNw73VI3PQBhoIzdeQSp9FCM2X0/1Qebh964McSDeUhMyJjgkYfnn0PqeAISmC8owde156tsAossn3KIXRcxU7c0DMSXjon+qg0zrUaEdZiEE=
+    on:
+      tags: true
