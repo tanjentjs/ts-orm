@@ -7,3 +7,4 @@ typings/
 !/.config-sample/config.js
 .idea/workspace.xml
 .idea/dictionaries/
+npm-debug.log
