@@ -7,7 +7,7 @@ and will talk via an api.
 
 Requests, Bugs, and Roadmap
 ===========================
-Please submit all requests for features and bug requests via the github [bug tracker](issues), the roadmap will be tracked via github [milestones](milestones)
+Please submit all requests for features and bug requests via the github [bug tracker](../../issues), the roadmap will be tracked via github [milestones](../../milestones)
 
 Development
 ===========
