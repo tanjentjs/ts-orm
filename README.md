@@ -30,7 +30,7 @@ Note: You can also add a fourth paramter of type [sequelize.Options](http://docs
 
 Create your object file, see the [example](node/example.ts)
 
-Note: The @register line is only necessary if using the api layer
+Note: The @register and @Injectable lines are only necessary if using the api layer
 
 node-api
 --------
