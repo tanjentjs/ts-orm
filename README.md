@@ -18,15 +18,17 @@ Usage
 
 node
 ----
-1. In your index file add the following
+In your index file add the following
 ```ts
 import {connect} from 'tanjentjs-ts-orm/node';
 
 connect('database', 'username', 'password')
 ```
-> You can also add a fourth paramter of type [sequelize.Options](http://docs.sequelizejs.com/en/latest/api/sequelize/)
-2. Create your object file see the [example](node/example.ts)
-   * Note: The @register line is only necessary if using the api layer
+Note: You can also add a fourth paramter of type [sequelize.Options](http://docs.sequelizejs.com/en/latest/api/sequelize/)
+
+Create your object file, see the [example](node/example.ts)
+
+Note: The @register line is only necessary if using the api layer
 
 Requests, Bugs, and Roadmap
 ===========================
