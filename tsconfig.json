@@ -11,6 +11,7 @@
 		"removeComments": false
 	},
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"node/example.ts"
 	]
 }

@@ -7,7 +7,11 @@ and will talk via an api.
 
 Installing
 ==========
-TBD
+```bash
+npm install --save tanjentjs-ts-orm
+typings install --save sequelize
+typings install --save --global env~node dt~es6-shim
+```
 
 Usage
 =====
@@ -16,12 +20,13 @@ node
 ----
 1. In your index file add the following
 ```ts
-import {connect} from '@tanjentjs/ts-orm/node';
+import {connect} from 'tanjentjs-ts-orm/node';
 
 connect('database', 'username', 'password')
 ```
 > You can also add a fourth paramter of type [sequelize.Options](http://docs.sequelizejs.com/en/latest/api/sequelize/)
 2. Create your object file see the [example](node/example.ts)
+   * Note: The @register line is only necessary if using the api layer
 
 Requests, Bugs, and Roadmap
 ===========================
@@ -35,9 +40,8 @@ TBD
 
 Directory structure
 =======
-* src - contains all source files
-* src/shared - contains the files shared across all vendors
-* src/node - contains the files for use via nodejs
+* shared - contains the files shared across all vendors
+* node - contains the files for use via nodejs
 
 Development
 ===========

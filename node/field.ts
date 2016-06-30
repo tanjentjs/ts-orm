@@ -1,3 +1,5 @@
+import * as moment from 'moment';
+
 import {field as sharedField} from '../shared/field';
 import {Types} from '../shared/Types';
 

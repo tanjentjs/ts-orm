@@ -23,7 +23,7 @@ export const registeredClasses: registeredClassMap =
 /**
  * This registers the class with the API ORM system
  */
-export function Register(moduleId: string) {
+export function register(moduleId: string) {
 	return (target: new (...args: any[]) => IDataConnection<IDataContract>): any => {
 		const idx = moduleId + (<any> target.constructor).name;
 		registeredClasses[idx] = target;
