@@ -4,6 +4,7 @@ An object relational model which uses typescript annotations to define the data
 schema. It can be used in node applications and includes bindings for angular 
 js dependancy injection. It can also be used on the frontend with a little setup
 and will talk via an api.
+[![Build Status](https://travis-ci.org/tanjentjs/ts-orm.svg?branch=master)](https://travis-ci.org/tanjentjs/ts-orm)
 
 Installing
 ==========
