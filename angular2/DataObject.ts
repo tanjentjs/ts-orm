@@ -1,15 +1,17 @@
-import { IDataConnection, IDataContract } from '../shared/DataObject';
+import { IDataConnection, IDataContract, register as sharedRegister } from '../shared/DataObject';
 import { Http, Headers, Response, RequestOptions } from '@angular/http';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
 import {Types} from '../shared/Types';
 
-import {field, AuthHandler} from './index';
+import {field} from './field';
+import {AuthHandler} from './AuthHandler';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
+import { Inject, Injectable } from '@angular/core';
 
 export abstract class DataContract implements IDataContract {
 	private get fields(): string[] {
@@ -67,18 +69,26 @@ export abstract class DataContract implements IDataContract {
 }
 
 export abstract class DataConnection<T extends DataContract> implements IDataConnection<T> {
+	private http: Http = this.injector && this.injector.get(Http);
+	private auth: AuthHandler = this.injector && this.injector.get(AuthHandler);
 
-	constructor(
-		private http: Http,
-		private auth: AuthHandler
-	) {}
+	constructor(private injector?: Injector) {
+		if(!this.injector) {
+			throw 'You must pass in the angular injector!';
+		}
+	}
 
 	private get baseUri(): string {
-		const registered = Reflect.getMetadata("framework:registered", this);
-		return '/object/' + registered[1] + '/' + registered[2];
+		const registered = Reflect.getMetadata('ORM:registeredIndex', this.constructor);
+		return '/object/' + registered;
 	}
 
 	public fetch(id: number): Promise<T> {
+		try {
+			console.log(this.auth.setOptions(getOptions()));
+		}catch(e) {
+			console.log(e);
+		}
 		return this.http
 			.get(
 				this.baseUri + '/' + id,
