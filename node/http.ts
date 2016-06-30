@@ -1,18 +1,16 @@
 import * as http from 'http';
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 
-import { HttpHelper } from '../HttpHelper';
-import { Session } from '../Session';
-import { getInjector } from '../Injector';
 import { DataConnection, DataContract } from './DataObject';
-import { registeredClasses } from '../../shared/ORM/DataObject';
+import { registeredClasses } from '../shared/DataObject';
+
+let injector: Injector = null;
+export function setInjector(inbound: Injector) {
+	injector = inbound;
+}
 
 @Injectable()
 export class HTTP {
-	constructor(
-		private session: Session
-	) {}
-
 	public handle(
 		requestData: http.IncomingMessage,
 		responseData: http.ServerResponse
@@ -29,16 +27,10 @@ export class HTTP {
 
 			let contract: DataConnection<DataContract>;
 			try {
-				contract = getInjector().get(registeredClasses[idx]);
+				contract = injector.get(registeredClasses[idx]);
 			} catch (e) { /* */ }
 
 			let sessionLoad = Promise.resolve();
-			if (requestData.headers.authorization) {
-				const authHeader = requestData.headers.authorization.split(' ');
-				if (authHeader[0] === 'JWT' && authHeader.length === 2) {
-					sessionLoad = this.session.loadJWT(authHeader[1]);
-				}
-			}
 
 			sessionLoad.then(() => {
 				if (requestData.method === 'GET' && id) {
@@ -89,7 +81,7 @@ export class HTTP {
 		responseData: http.ServerResponse,
 		contract: DataConnection<DataContract>
 	) {
-		HttpHelper.fetchBody(requestData, responseData)
+		this.fetchBody(requestData, responseData)
 			.then((bodyData: any) => {
 				return contract.search(bodyData);
 			})
@@ -114,7 +106,7 @@ export class HTTP {
 		}
 		dataPromise.then(
 			(data: DataContract) => {
-				HttpHelper.fetchBody(requestData, responseData)
+				this.fetchBody(requestData, responseData)
 					.then((bodyData: any) => {
 						data.loadData(bodyData);
 						data.save().then(() => {
@@ -161,10 +153,28 @@ export class HTTP {
 
 	private respondOk(responseData: http.ServerResponse, data?: string) {
 		responseData.setHeader('content-type', 'application/json');
-		this.session.getJWT().then((token: string) => {
-			responseData.setHeader('jwt-token', token);
-			responseData.statusCode = 200;
-			responseData.end(data || '');
+	}
+
+	private fetchBody(requestData: http.IncomingMessage, responseData: http.ServerResponse): Promise<String> {
+		return new Promise((resolve, reject) => {
+			let body: string = '';
+			let bodyData: any;
+
+			requestData.on('data', function (data) {
+				body += data;
+			});
+			requestData.on('end', () => {
+				try {
+					bodyData = JSON.parse(body);
+				} catch (e) {
+					responseData.statusCode = 412;
+					responseData.end('Malformed JSON');
+					reject('Malformed JSON');
+				}
+				if (bodyData) {
+					resolve(bodyData);
+				}
+			});
 		});
 	}
 }
