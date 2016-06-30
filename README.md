@@ -18,7 +18,7 @@ typings install --save --global env~node dt~es6-shim
 Usage
 =====
 
-Please checkout the [wiki](../../wiki),
+Please checkout the [wiki](../../wiki)
 
 Requests, Bugs, and Roadmap
 ===========================
