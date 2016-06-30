@@ -1,0 +1,6 @@
+node_modules/
+typings/
+*.ts
+!*.d.ts
+.idea/
+npm-debug.log

@@ -1,0 +1,9 @@
+node_modules/
+typings/
+*.js
+*.js.map
+*.d.ts
+.config/
+!/.config-sample/config.js
+.idea/workspace.xml
+.idea/dictionaries/

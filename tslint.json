@@ -1,0 +1,24 @@
+{
+	"extends": "tslint:recommended",
+	"rules": {
+		"indent": "tabs",
+		"quotemark": "single",
+		"trailing-comma": "never",
+		"no-var-requires": false,
+		"variable-name": {
+			"check-format": {
+				"allow-leading-underscore": true
+			}
+		},
+		"no-console": [
+			true,
+			"debug",
+			"info",
+			"log",
+			"time",
+			"timeEnd",
+			"trace",
+			"error"
+		]
+	}
+}
