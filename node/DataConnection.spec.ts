@@ -1,11 +1,10 @@
 import * as mockery from 'mockery';
 import * as chai from 'chai';
 import * as classTypes from './DataConnection.spec.class';
-import * as moment from 'moment';
 import * as sinon from 'sinon';
 import * as sequelize from 'sequelize';
 
-import {Sequelize, Model} from '../mocks/Sequelize';
+import {Sequelize} from '../mocks/Sequelize';
 
 describe('node/DataConnection', function() {
 	let connect: any;
@@ -176,7 +175,6 @@ describe('node/DataConnection', function() {
 			});
 		});
 	});
-
 
 	describe('noProp', function () {
 		let current: classTypes.NoProp;

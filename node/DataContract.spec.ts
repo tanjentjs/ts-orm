@@ -39,9 +39,9 @@ describe('node/DataContract', function() {
 			model = new Model('existing');
 			instance = {
 				destroy: sinon.stub(),
+				get: sinon.stub(),
 				save: sinon.stub(),
-				set: sinon.stub(),
-				get: sinon.stub()
+				set: sinon.stub()
 			};
 			instance.destroy.returns(Promise.resolve());
 			instance.save.returns(Promise.resolve());
