@@ -1,5 +1,5 @@
-import { registeredClasses } from '../shared/DataObject';
+import { registeredClasses, IDataConnection, IDataContract } from '../shared/DataObject';
 
-export function getInject() {
+export function getInject(): (new (...b: any[]) => IDataConnection<IDataContract>)[] {
 	return Array.from(registeredClasses.values());
 }
