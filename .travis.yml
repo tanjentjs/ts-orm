@@ -1,6 +1,7 @@
 language: node_js
 node_js:
 - '5.10'
+before_install: export npm_config_loglevel=silent
 before_deploy: npm version --no-git-tag-version `git -c core.longpaths=true describe --abbrev=0 --tags`
 deploy:
   - provider: npm
