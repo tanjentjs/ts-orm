@@ -81,7 +81,7 @@ export abstract class DataContract implements IDataContract {
 			const type: Types = Reflect.getMetadata("ORM:type", this, fieldName);
 			switch (type) {
 				case(Types.dateTimeTz):
-					returnObj[fieldName] = value.toISOString();
+					returnObj[fieldName] = value && value.toISOString();
 					break;
 				default:
 					returnObj[fieldName] = value;

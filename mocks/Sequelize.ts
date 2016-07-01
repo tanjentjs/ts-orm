@@ -1,5 +1,6 @@
 import * as sinon from 'sinon';
 import * as sequelize from 'sequelize';
+import * as _ from 'lodash';
 
 export class Sequelize implements sequelize.SequelizeStaticAndInstance {
 	public Utils: typeof sequelize.Utils;
@@ -43,8 +44,14 @@ export class Sequelize implements sequelize.SequelizeStaticAndInstance {
 		public username,
 		public password,
 		public options
-	) { }
+	) {}
 }
+
+_.forEach(sequelize, (val, key) => {
+	if (key === key.toUpperCase()) {
+		Sequelize[key] = val;
+	}
+});
 
 export class Model<TInstance, TAttributes> implements sequelize.Model<TInstance, TAttributes> {
 	public Instance: sinon.SinonStub = sinon.stub();

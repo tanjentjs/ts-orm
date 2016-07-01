@@ -9,7 +9,10 @@ describe('node/connect', function() {
 	before(function(){
 		mockery.enable();
 		mockery.registerMock('sequelize', Sequelize);
-		mockery.registerAllowable('./connect');
+		mockery.registerAllowables([
+			'./connect',
+			'lodash'
+		]);
 
 		connect = require('./connect');
 	});

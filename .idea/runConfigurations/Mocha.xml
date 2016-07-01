@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Mocha" type="mocha-javascript-test-runner" factoryName="Mocha">
+    <node-interpreter>project</node-interpreter>
+    <node-options />
+    <working-directory>$PROJECT_DIR$</working-directory>
+    <pass-parent-env>true</pass-parent-env>
+    <envs>
+      <env name="NODE_PATH" value="$project_dir$/node_modules" />
+    </envs>
+    <ui>bdd</ui>
+    <extra-mocha-options>-r reflect-metadata -r ./nonAllowedFatal</extra-mocha-options>
+    <test-kind>PATTERN</test-kind>
+    <test-pattern>./{,!(node_modules)/**/}/*.spec.js</test-pattern>
+    <method />
+  </configuration>
+</component>

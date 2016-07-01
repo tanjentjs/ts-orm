@@ -34,11 +34,6 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 		return this._fields;
 	}
 
-	private _promise: Promise<any> = null;
-	public get promise(): Promise<any> {
-		return this._promise;
-	}
-
 	// This is used in some of the decorators
 	// tslint:disable-next-line:no-unused-variable
 	private instance: any = null;
@@ -79,6 +74,11 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 					case Types.integer:
 						model[fieldName] = {
 							type: sequelize.INTEGER
+						};
+						break;
+					case Types.dateTimeTz:
+						model[fieldName] = {
+							type: sequelize.DATE
 						};
 						break;
 					default:
