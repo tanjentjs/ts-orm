@@ -26,12 +26,18 @@ Please submit all requests for features and bug requests via the github
 
 Testing
 =======
-TBD
+* Tests will be placed along side the file in question in a file labeled <name>.spec.ts
+* Tests will be written using Mocha with the describe statement containing the name of the file including the directory
+   (ex. 'node/connect' for 'node/connect.ts')
+* If you need to create classes for testing (ex. testing an abstract class) place them in a <name>.spec.class.ts
+* All public interfaces must be tested
+* In order to fix a bug you must write a test first, this is to avoid regressions
 
 Directory structure
 =======
 * shared - contains the files shared across all vendors
 * node - contains the files for use via nodejs
+* mocks - contains mock objects for use in testing
 
 Development
 ===========

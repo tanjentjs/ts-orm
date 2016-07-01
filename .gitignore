@@ -8,3 +8,4 @@ typings/
 .idea/workspace.xml
 .idea/dictionaries/
 npm-debug.log
+coverage/

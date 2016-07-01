@@ -1,6 +1,7 @@
 import * as http from 'http';
 
-import { DataConnection, DataContract } from './DataObject';
+import { DataContract } from './DataContract';
+import { DataConnection } from './DataConnection';
 import { registeredClasses } from '../shared/DataObject';
 
 export class HTTP {

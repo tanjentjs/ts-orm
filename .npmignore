@@ -4,3 +4,4 @@ typings/
 !*.d.ts
 .idea/
 npm-debug.log
+coverage/
