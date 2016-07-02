@@ -7,6 +7,8 @@ and will talk via an api.
 
 [![Build Status](https://travis-ci.org/tanjentjs/ts-orm.svg?branch=master)](https://travis-ci.org/tanjentjs/ts-orm)
 [![Coverage Status](https://coveralls.io/repos/github/tanjentjs/ts-orm/badge.svg?branch=master)](https://coveralls.io/github/tanjentjs/ts-orm?branch=master)
+[![NPM Downloads](https://img.shields.io/npm/dm/tanjentjs-ts-orm.svg)](https://www.npmjs.com/package/tanjentjs-ts-orm)
+[![Slack Status](https://tanjentjs-slack.herokuapp.com/badge.svg)](https://tanjentjs-slack.herokuapp.com/)
 
 Installing
 ==========
