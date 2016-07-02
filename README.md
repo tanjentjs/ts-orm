@@ -6,6 +6,7 @@ js dependancy injection. It can also be used on the frontend with a little setup
 and will talk via an api.
 
 [![Build Status](https://travis-ci.org/tanjentjs/ts-orm.svg?branch=master)](https://travis-ci.org/tanjentjs/ts-orm)
+[![Coverage Status](https://coveralls.io/repos/github/tanjentjs/ts-orm/badge.svg?branch=master)](https://coveralls.io/github/tanjentjs/ts-orm?branch=master)
 
 Installing
 ==========

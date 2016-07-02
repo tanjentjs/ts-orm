@@ -7,8 +7,9 @@
     "lint": "tslint -e \"node_modules/**\" -e \"typings/**\" -e \"**/*.d.ts\" \"**/*.ts\"",
     "mocha": "./run_mocha.sh",
     "coverage": "istanbul check-coverage --statements 1 --functions 1 --branches 1 --lines 1",
+    "coveralls": "cat coverage/lcov.info | ./node_modules/.bin/coveralls",
     "prepublish": "typings install && tsc",
-    "test": "npm run lint && npm run mocha && npm run coverage"
+    "test": "npm run lint && npm run mocha && npm run coveralls && npm run coverage"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
     "@angular/http": "^2.0.0-rc.4",
     "@angular/platform-browser": "^2.0.0-rc.4",
     "chai": "^3.5.0",
+    "coveralls": "^2.11.9",
     "istanbul": "^1.1.0-alpha.1",
     "livereload": "^0.4.1",
     "mocha": "^2.5.3",
