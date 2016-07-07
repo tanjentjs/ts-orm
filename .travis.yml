@@ -10,3 +10,7 @@ deploy:
     on:
       tags: true
     email: "waterfoul@gmail.com"
+cache:
+  directories:
+    - node_modules
+    - typings
