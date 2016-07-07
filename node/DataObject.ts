@@ -139,7 +139,7 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 		val.sync();
 	}
 
-	constructor() {
+	constructor(private injector?: Injector) {
 		let className = (<any> this.constructor).name;
 
 		if (!this.model) {
