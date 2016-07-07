@@ -1,11 +1,12 @@
 import * as chai from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
+
+chai.use(chaiAsPromised);
+require('source-map-support').install();
 
 /**
  * This makes the "loading non-allowed module" warnings from mockery fatal
- * It also installs source map support
  */
-require('source-map-support').install();
-
 const origwarn = console.warn;
 console.warn = function(...args: any[]) {
 	if (

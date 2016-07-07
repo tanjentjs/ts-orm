@@ -43,9 +43,30 @@ describe('node/DataConnection', function() {
 
 	beforeEach(function () {
 		model = {
+			findAll: sinon.stub(),
+			findById: sinon.stub(),
 			sync: sinon.stub()
 		};
 
+		model.findById.withArgs(42).returns(Promise.resolve({id: 42}));
+		model.findById.returns(Promise.resolve(null));
+		model.findAll.withArgs({
+			include: [{ all: true }],
+			where: {
+				find: true
+			}
+		}).returns(Promise.resolve([
+			{
+				get: () => 40
+			},
+			{
+				get: () => 41
+			},
+			{
+				get: () => 42
+			}
+		]));
+		model.findAll.returns(Promise.resolve([]));
 		connect.connection.define.returns(model);
 	});
 
@@ -174,6 +195,16 @@ describe('node/DataConnection', function() {
 				]);
 			});
 		});
+
+		describe('badProp', function () {
+
+			it('throws an error', function () {
+				chai.expect(() => {
+					const a = new classes.BadProp();
+					a.create();
+				}).to.throw(TypeError);
+			});
+		});
 	});
 
 	describe('noProp', function () {
@@ -186,6 +217,26 @@ describe('node/DataConnection', function() {
 		it('creates', function () {
 			const thing = current.create();
 			chai.expect(thing).to.not.be.null;
+		});
+
+		it('rejects on bad ids', function () {
+			return chai.expect(current.fetch(40)).to.eventually.be.rejectedWith('Not Found');
+		});
+
+		it('resolves on good ids', function () {
+			return chai.expect(current.fetch(42)).to.eventually.be.fulfilled;
+		});
+
+		it('returns empty', function () {
+			return chai.expect(current.search({
+				find: false
+			})).to.eventually.deep.equal([]);
+		});
+
+		it('returns full', function () {
+			return chai.expect(current.search({
+				find: true
+			})).to.eventually.have.deep.property('[2].id', 42);
 		});
 	});
 

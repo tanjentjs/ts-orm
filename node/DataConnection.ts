@@ -82,11 +82,11 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 						};
 						break;
 					default:
-						logger.error('Field of unknown type found!', {
-							fieldName: fieldName,
-							fieldType: type
-						});
-						break;
+						throw new TypeError(
+							'Field of unknown type found! ' +
+							'Field Name:' + fieldName + ' ' +
+							'Field Type: ' + type
+						);
 				}
 			});
 			this.model = connection.define(
@@ -100,15 +100,14 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	}
 
 	public fetch(id: number): Promise<T> {
-		return new Promise((res, rej) => {
-			this.model.findById(id).then(res, rej);
-		}).then((sqlData: any): Promise<T> | T => {
-			if ( sqlData === null ) {
-				return <any> Promise.reject('Not Found');
-			} else {
-				return new (this.getContract())(sqlData, this.model);
-			}
-		});
+		return this.model.findById(id)
+			.then((sqlData: any): Promise<T> | T => {
+				if ( sqlData === null ) {
+					return <any> Promise.reject('Not Found');
+				} else {
+					return new (this.getContract())(sqlData, this.model);
+				}
+			});
 	}
 
 	public create(): T {
@@ -118,20 +117,18 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	public search(
 		criteria: sequelize.WhereOptions | Array<sequelize.col | sequelize.and | sequelize.or | string>
 	): Promise<T[]> {
-		return new Promise((resolve, reject) => {
-			this.model
-				.findAll({
-					include: [{ all: true }],
-					where: criteria
-				})
-				.then((data: any[]) => {
-					let ret: T[] = [];
-					_.forEach(data, (value: any) => {
-						ret.push(new (this.getContract())(value, this.model));
-					});
-					resolve(ret);
-				}, reject);
-		});
+		return <any> this.model
+			.findAll({
+				include: [{ all: true }],
+				where: criteria
+			})
+			.then((data: any[]) => {
+				let ret: T[] = [];
+				_.forEach(data, (value: any) => {
+					ret.push(new (this.getContract())(value, this.model));
+				});
+				return ret;
+			});
 	}
 
 	/**

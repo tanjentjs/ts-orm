@@ -8,7 +8,7 @@
       <env name="NODE_PATH" value="$project_dir$/node_modules" />
     </envs>
     <ui>bdd</ui>
-    <extra-mocha-options>-r reflect-metadata -r ./nonAllowedFatal</extra-mocha-options>
+    <extra-mocha-options>-r reflect-metadata -r ./mochaInit</extra-mocha-options>
     <test-kind>PATTERN</test-kind>
     <test-pattern>./{,!(node_modules)/**/}/*.spec.js</test-pattern>
     <method />

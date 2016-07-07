@@ -6,4 +6,4 @@
     --include-all-sources \
     ./node_modules/.bin/_mocha \
         -r node_modules/reflect-metadata \
-        -r ./nonAllowedFatal './{,!(node_modules)/**/}/*.spec.js'
+        -r ./mochaInit './{,!(node_modules)/**/}/*.spec.js'

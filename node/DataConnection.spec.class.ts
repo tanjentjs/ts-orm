@@ -30,3 +30,9 @@ export class DateProp extends DataConnection<Contracts.DateProp> {
 		return Contracts.DateProp;
 	}
 }
+
+export class BadProp extends DataConnection<Contracts.BadProp> {
+	protected getContract() {
+		return Contracts.BadProp;
+	}
+}

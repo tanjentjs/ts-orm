@@ -33,13 +33,12 @@ export function field(target: any, key: string, actions: IActions, type?: Types)
 				case 'Number':
 					type = Types.float;
 					break;
+				/* istanbul ignore next */
 				case 'Object':
-					// tslint:disable-next-line:no-console
-					console.error('Automatic mapping of Objects is unsupported');
-					break;
+					throw new TypeError('Automatic mapping of Objects is unsupported');
+				/* istanbul ignore next */
 				default:
-					// tslint:disable-next-line:no-console
-					console.error('Unknown js type found', jsType.name);
+					throw new TypeError('Unknown js type found! ' + jsType.name);
 			}
 		}
 		Reflect.defineMetadata("ORM:type", type, target, key);
