@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/mocks/Sequelize.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/connect.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/connect.spec.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/DataConnection.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/DataConnection.spec.class.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/DataContract.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/DataContract.spec.class.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/DataContract.spec.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/field.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/getInject.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/http.d.ts" />
+    <file url="file://$PROJECT_DIR$/node/index.d.ts" />
+  </component>
+</project>
