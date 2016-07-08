@@ -32,13 +32,13 @@ export class HTTP {
 				contract = HTTP.initialized[idx];
 			}
 
-			if (requestData.method === 'GET' && id) {
+			if (requestData.method === 'GET' && id !== undefined) {
 				if (contract) {
 					return HTTP.GET(id, requestData, responseData, contract);
 				} else {
 					return HTTP.respondNotFound(responseData);
 				}
-			} else if (requestData.method === 'POST' && !id) {
+			} else if (requestData.method === 'POST' && id === undefined) {
 				if (contract) {
 					return HTTP.POST(requestData, responseData, contract);
 				} else {
@@ -50,7 +50,7 @@ export class HTTP {
 				} else {
 					return HTTP.respondNotFound(responseData);
 				}
-			} else if (requestData.method === 'DELETE' && id) {
+			} else if (requestData.method === 'DELETE' && id !== undefined) {
 				if (contract) {
 					return HTTP.DELETE(id, requestData, responseData, contract);
 				} else {
@@ -108,7 +108,7 @@ export class HTTP {
 		contract: DataConnection<DataContract>
 	): Promise<string> {
 		let dataPromise: Promise<DataContract>;
-		if (id) {
+		if (id !== undefined) {
 			dataPromise = contract.fetch(id);
 		} else {
 			dataPromise = new Promise<DataContract>((resolve) => {
