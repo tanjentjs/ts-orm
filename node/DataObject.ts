@@ -168,6 +168,11 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 							type: sequelize.INTEGER
 						};
 						break;
+					case Types.bigInt:
+						model[fieldName] = {
+							type: sequelize.BIGINT
+						};
+						break;
 					default:
 						logger.error('Field of unknown type found!', {
 							fieldName: fieldName,
