@@ -1,15 +1,14 @@
 import * as mockery from 'mockery';
 import * as chai from 'chai';
 import * as classTypes from './DataConnection.spec.class';
-import * as sinon from 'sinon';
 import * as sequelize from 'sequelize';
+import * as mockConnect from '../mocks/connect';
 
 import {Sequelize} from '../mocks/Sequelize';
 
 describe('node/DataConnection', function() {
 	let connect: any;
 	let classes: any;
-	let model: any;
 
 	before(function(){
 		mockery.enable();
@@ -20,6 +19,7 @@ describe('node/DataConnection', function() {
 			'./DataConnection',
 			'./DataContract.spec.class',
 			'./DataConnection.spec.class',
+			'../shared/DataObject',
 			'./field',
 			'../shared/field',
 			'../shared/Types',
@@ -42,16 +42,13 @@ describe('node/DataConnection', function() {
 	});
 
 	beforeEach(function () {
-		model = {
-			findAll: sinon.stub(),
-			findById: sinon.stub(),
-			sync: sinon.stub()
-		};
+		mockConnect.reset(connect);
 
-		model.findById.withArgs(42).returns(Promise.resolve({id: 42}));
-		model.findById.returns(Promise.resolve(null));
-		model.findAll.withArgs({
-			include: [{ all: true }],
+		mockConnect.model.findById.withArgs(42).returns(Promise.resolve({
+			get: () => 42
+		}));
+		mockConnect.model.findAll.withArgs({
+			include: [{all: true}],
 			where: {
 				find: true
 			}
@@ -66,8 +63,6 @@ describe('node/DataConnection', function() {
 				get: () => 42
 			}
 		]));
-		model.findAll.returns(Promise.resolve([]));
-		connect.connection.define.returns(model);
 	});
 
 	describe('constructor', function() {

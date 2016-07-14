@@ -1,12 +1,15 @@
 import {DataConnection} from './DataConnection';
+import {register} from '../shared/DataObject';
 import * as Contracts from './DataContract.spec.class';
 
+@register('test')
 export class NoProp extends DataConnection<Contracts.NoProp> {
 	protected getContract() {
 		return Contracts.NoProp;
 	}
 }
 
+@register('test')
 export class StringProp extends DataConnection<Contracts.StringProp> {
 	protected getContract() {
 		return Contracts.StringProp;
