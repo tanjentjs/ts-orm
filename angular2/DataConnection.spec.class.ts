@@ -18,32 +18,18 @@ export class NoInject extends DataConnection<Contracts.NoProp> {
 	}
 }
 
+@register('test')
 export class StringProp extends DataConnection<Contracts.StringProp> {
+	constructor(injector?: Injector) { super(injector); }
 	protected getContract() {
 		return Contracts.StringProp;
 	}
 }
 
-export class FloatProp extends DataConnection<Contracts.FloatProp> {
-	protected getContract() {
-		return Contracts.FloatProp;
-	}
-}
-
-export class IntProp extends DataConnection<Contracts.IntProp> {
-	protected getContract() {
-		return Contracts.IntProp;
-	}
-}
-
+@register('test')
 export class DateProp extends DataConnection<Contracts.DateProp> {
+	constructor(injector?: Injector) { super(injector); }
 	protected getContract() {
 		return Contracts.DateProp;
-	}
-}
-
-export class BadProp extends DataConnection<Contracts.BadProp> {
-	protected getContract() {
-		return Contracts.BadProp;
 	}
 }

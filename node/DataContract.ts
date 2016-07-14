@@ -47,12 +47,13 @@ export abstract class DataContract implements IDataContract {
 		return JSON.stringify(this.toJSON());
 	}
 
-	public save(): Promise<void> {
+	public save(): Promise<this> {
 		if (this.instance) {
-			return this.instance.save();
+			return this.instance.save().then(() => this);
 		} else {
 			return this.model.create(this.getFields()).then((sqlData: any) => {
 				this.instance = sqlData;
+				return this;
 			});
 		}
 	}

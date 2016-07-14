@@ -12,10 +12,6 @@ import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
 
 export abstract class DataContract implements IDataContract {
-	private get fields(): string[] {
-		return Reflect.getMetadata('ORM:fields', this);
-	}
-
 	@field()
 	public id: number;
 	@field(Types.dateTimeTz)
@@ -30,7 +26,7 @@ export abstract class DataContract implements IDataContract {
 		private data: any = {}
 	) {}
 
-	public save(): Promise<void> {
+	public save(): Promise<this> {
 		// TODO: optimistic locking
 		let request: Observable<Response>;
 		if (this.id) {
@@ -50,6 +46,7 @@ export abstract class DataContract implements IDataContract {
 			.map((res: Response) => this.auth.handleResponse(res))
 			.map((res: Response) => {
 				this.data = res.json();
+				return this;
 			})
 			.toPromise();
 	}

@@ -5,7 +5,7 @@ export interface IDataContract {
 	createdAt: moment.Moment;
 	updatedAt: moment.Moment;
 
-	save(): Promise<void>;
+	save(): Promise<this>;
 	delete(): Promise<void>;
 }
 
