@@ -35,6 +35,7 @@ Testing
 * If you need to create classes for testing (ex. testing an abstract class) place them in a <name>.spec.class.ts
 * All public interfaces must be tested
 * In order to fix a bug you must write a test first, this is to avoid regressions
+* The test reporter should always show 100% coverage. If something doesn't make sense to test you can ignore it using special comments
 
 Directory structure
 =======

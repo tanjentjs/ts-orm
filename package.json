@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "tslint -e \"node_modules/**\" -e \"typings/**\" -e \"**/*.d.ts\" \"**/*.ts\"",
     "mocha": "./run_mocha.sh",
-    "coverage": "istanbul check-coverage --statements 80 --functions 80 --branches 80 --lines 80",
+    "coverage": "istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100",
     "coveralls": "cat coverage/lcov.info | ./node_modules/.bin/coveralls",
     "prepublish": "typings install && tsc",
     "test": "npm run lint && npm run mocha && npm run coveralls && npm run coverage"
