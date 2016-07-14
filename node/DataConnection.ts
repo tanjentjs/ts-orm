@@ -3,14 +3,11 @@
 import * as reflectMetadata from 'reflect-metadata';
 import * as sequelize from 'sequelize';
 import * as _ from 'lodash';
-import * as bunyan from 'bunyan';
 
 import { Types } from '../shared/Types';
 import { IDataConnection } from '../shared/DataObject';
 import { connection } from './connect';
 import {DataContract} from './DataContract';
-
-const logger = bunyan.createLogger({name: "ORM/DataObject"});
 
 export abstract class DataConnection<T extends DataContract> implements IDataConnection<T> {
 

@@ -13,7 +13,6 @@ export function reset(connect: any) {
 	model.findById = sinon.stub();
 	model.findById.returns(Promise.resolve(null));
 
-
 	model.findAll = sinon.stub();
 	model.findAll.returns(Promise.resolve([]));
 
