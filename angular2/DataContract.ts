@@ -1,5 +1,5 @@
 import { IDataContract } from '../shared/DataObject';
-import { Http, Headers, Response, RequestOptions } from '@angular/http';
+import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import * as moment from 'moment';
 
 import {Types} from '../shared/Types';
@@ -64,4 +64,13 @@ export abstract class DataContract implements IDataContract {
 			.toPromise()
 			.then(() => { /* */ });
 	}
+}
+
+export function getOptions(): RequestOptions {
+	const headers: Headers = new Headers();
+	headers.set('accept', 'application/json');
+
+	return new RequestOptions({
+		headers: headers
+	});
 }

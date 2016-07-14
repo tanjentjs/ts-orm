@@ -4,7 +4,7 @@ import { Injector } from '@angular/core';
 import * as _ from 'lodash';
 
 import {AuthHandler} from './AuthHandler';
-import {DataContract} from './DataContract';
+import {DataContract, getOptions} from './DataContract';
 
 export abstract class DataConnection<T extends DataContract> implements IDataConnection<T> {
 	private http: Http = this.injector && this.injector.get(Http);
@@ -34,7 +34,7 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 					this.http,
 					this.auth,
 					this.baseUri,
-					body || { }
+					body
 				);
 			}).toPromise();
 	}
@@ -77,13 +77,4 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 		baseUri: string,
 		data?: any
 	) => T;
-}
-
-function getOptions(): RequestOptions {
-	const headers: Headers = new Headers();
-	headers.set('accept', 'application/json');
-
-	return new RequestOptions({
-		headers: headers
-	});
 }
