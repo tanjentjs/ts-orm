@@ -44,7 +44,7 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 		val.sync();
 	}
 
-	constructor() {
+	constructor(injector?: any) {
 		let className = (<any> this.constructor).name;
 
 		if (!this.model) {
@@ -71,6 +71,16 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 					case Types.integer:
 						model[fieldName] = {
 							type: sequelize.INTEGER
+						};
+						break;
+					case Types.bigInt:
+						model[fieldName] = {
+							type: sequelize.BIGINT
+						};
+						break;
+					case Types.dateTimeTz:
+						model[fieldName] = {
+							type: sequelize.DATE
 						};
 						break;
 					case Types.dateTimeTz:
