@@ -83,11 +83,6 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 							type: sequelize.DATE
 						};
 						break;
-					case Types.dateTimeTz:
-						model[fieldName] = {
-							type: sequelize.DATE
-						};
-						break;
 					default:
 						throw new TypeError(
 							'Field of unknown type found! ' +

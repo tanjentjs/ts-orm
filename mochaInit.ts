@@ -9,7 +9,6 @@ require('source-map-support').install();
  */
 const origwarn = console.warn;
 console.warn = function(...args: any[]) {
-	/* istanbul ignore else */
 	if (
 		args.length === 1 &&
 		args[0].startsWith &&

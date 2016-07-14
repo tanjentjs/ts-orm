@@ -28,6 +28,12 @@ export class IntProp extends DataConnection<Contracts.IntProp> {
 	}
 }
 
+export class BigIntProp extends DataConnection<Contracts.BigIntProp> {
+	protected getContract() {
+		return Contracts.BigIntProp;
+	}
+}
+
 export class DateProp extends DataConnection<Contracts.DateProp> {
 	protected getContract() {
 		return Contracts.DateProp;

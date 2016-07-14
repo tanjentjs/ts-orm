@@ -17,6 +17,10 @@ export class IntProp extends DataContract {
 	@field(Types.integer)
 	public inty: number;
 }
+export class BigIntProp extends DataContract {
+	@field(Types.bigInt)
+	public inty: number;
+}
 export class DateProp extends DataContract {
 	@field(Types.dateTimeTz)
 	public dateThing: moment.Moment;

@@ -166,6 +166,31 @@ describe('node/DataConnection', function() {
 			});
 		});
 
+		describe('bigIntProp', function () {
+			let current: classTypes.BigIntProp;
+
+			beforeEach(function () {
+				current = new classes.BigIntProp();
+			});
+
+			it('defines the connection', function () {
+				const calls = connect.connection.define.getCalls();
+
+				chai.expect(calls.length).to.equal(1);
+				chai.expect(calls[0].args).to.deep.equal([
+					"BigIntProp",
+					{
+						"inty": {
+							type: sequelize.BIGINT
+						}
+					},
+					{
+						"freezeTableName": true
+					}
+				]);
+			});
+		});
+
 		describe('dateProp', function () {
 			let current: classTypes.DateProp;
 
