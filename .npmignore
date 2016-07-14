@@ -5,3 +5,11 @@ typings/
 .idea/
 npm-debug.log
 coverage/
+mocks/
+*.spec.d.ts
+*.spec.js
+*.spec.js.map
+*.spec.class.d.ts
+*.spec.class.js
+*.spec.class.js.map
+*.sh
