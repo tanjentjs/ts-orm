@@ -1,4 +1,6 @@
 export {field} from './field';
 export {connect} from './connect';
-export {DataContract, DataConnection} from './DataObject';
+export {DataContract} from './DataContract';
+export {DataConnection} from './DataConnection';
 export {register} from '../shared/DataObject';
+export {HTTP} from './http';

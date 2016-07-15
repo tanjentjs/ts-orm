@@ -1,3 +1,6 @@
+// DO NOT REMOVE THIS IMPORT it is required for this file to function
+// tslint:disable-next-line:no-unused-variable
+import * as reflectMetadata from 'reflect-metadata';
 import * as moment from 'moment';
 
 import {field as sharedField} from '../shared/field';
@@ -28,7 +31,11 @@ export function field(type?: Types): (target: any, key: string) => any {
 			if (this.instance) {
 				switch (type) {
 					case(Types.dateTimeTz):
-						this.instance.set(key, newVal.toISOString());
+						if (!moment.isMoment(newVal) || !(<moment.Moment> newVal).isValid()) {
+							this.instance.set(key, null);
+						} else {
+							this.instance.set(key, newVal.toISOString());
+						}
 						break;
 					default:
 						this.instance.set(key, newVal);

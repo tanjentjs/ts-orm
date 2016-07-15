@@ -1,0 +1,23 @@
+instrumentation:
+  excludes: ['*.spec.js', '*.spec.class.js']
+  include-all-sources: true
+reporting:
+    watermarks:
+        statements: [80, 100]
+        lines: [80, 100]
+        functions: [80, 100]
+        branches: [80, 100]
+check:
+    each:
+        statements: -3
+        lines: -1
+        branches: -13
+        functions: -1
+    # Theres a bug in istanbuhl around the check-coverage command and sourcemaps,
+    # replace the above with this when it's fixed
+    #global:
+        #statements: 100
+        #lines: 100
+        #branches: 100
+        #functions: 100
+

@@ -6,6 +6,9 @@ js dependancy injection. It can also be used on the frontend with a little setup
 and will talk via an api.
 
 [![Build Status](https://travis-ci.org/tanjentjs/ts-orm.svg?branch=master)](https://travis-ci.org/tanjentjs/ts-orm)
+[![Coverage Status](https://coveralls.io/repos/github/tanjentjs/ts-orm/badge.svg?branch=master)](https://coveralls.io/github/tanjentjs/ts-orm?branch=master)
+[![NPM Downloads](https://img.shields.io/npm/dm/tanjentjs-ts-orm.svg)](https://www.npmjs.com/package/tanjentjs-ts-orm)
+[![Slack Status](https://tanjentjs-slack.herokuapp.com/badge.svg)](https://tanjentjs-slack.herokuapp.com/)
 
 Installing
 ==========
@@ -26,12 +29,19 @@ Please submit all requests for features and bug requests via the github
 
 Testing
 =======
-TBD
+* Tests will be placed along side the file in question in a file labeled <name>.spec.ts
+* Tests will be written using Mocha with the describe statement containing the name of the file including the directory
+   (ex. 'node/connect' for 'node/connect.ts')
+* If you need to create classes for testing (ex. testing an abstract class) place them in a <name>.spec.class.ts
+* All public interfaces must be tested
+* In order to fix a bug you must write a test first, this is to avoid regressions
+* The test reporter should always show 100% coverage. If something doesn't make sense to test you can ignore it using special comments
 
 Directory structure
 =======
 * shared - contains the files shared across all vendors
 * node - contains the files for use via nodejs
+* mocks - contains mock objects for use in testing
 
 Development
 ===========
