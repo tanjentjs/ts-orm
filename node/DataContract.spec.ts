@@ -104,6 +104,20 @@ describe('node/DataContract', function() {
 				instance.get.withArgs('dateThing').returns(isoDate);
 				chai.expect(current.dateThing.toISOString()).to.equal(isoDate);
 			});
+
+			it('handles invalid dates', function () {
+				current.dateThing = moment.invalid();
+				const calls = instance.set.getCalls();
+				chai.expect(calls.length).to.equal(1);
+				chai.expect(calls[0].args).to.deep.equal(['dateThing', null]);
+			});
+
+			it('handles bad assigns', function () {
+				current.dateThing = <any> 'Invalid Date';
+				const calls = instance.set.getCalls();
+				chai.expect(calls.length).to.equal(1);
+				chai.expect(calls[0].args).to.deep.equal(['dateThing', null]);
+			});
 		});
 	});
 
