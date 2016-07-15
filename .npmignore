@@ -13,3 +13,4 @@ mocks/
 *.spec.class.js
 *.spec.class.js.map
 *.sh
+.istanbul.yml
