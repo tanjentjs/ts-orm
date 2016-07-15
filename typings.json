@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "chai": "registry:npm/chai#3.5.0+20160415060238",
+    "chai-as-promised": "registry:npm/chai-as-promised#5.1.0+20160310030142",
     "sinon": "registry:npm/sinon#1.16.0+20160427193336"
   },
   "globalDevDependencies": {
