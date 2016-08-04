@@ -6,6 +6,7 @@
     <pass-parent-env>true</pass-parent-env>
     <envs>
       <env name="NODE_PATH" value="$project_dir$/node_modules" />
+      <env name="DEBUG" value="ts-orm:*,ts-orm-info:*" />
     </envs>
     <ui>bdd</ui>
     <extra-mocha-options>-r reflect-metadata -r ./mochaInit</extra-mocha-options>

@@ -119,6 +119,33 @@ describe('node/http', function() {
 				chai.expect(response.then(parse)).to.eventually.have.property('updatedAt')
 			]);
 		});
+
+		it('returns 200 with data for working ids and hides properties', function () {
+			getRequest.url += 'test.HiddenProp/43';
+			const response = http.HTTP.handle(getRequest, responseData);
+			const parsedResponse = response.then((data: string) => JSON.parse(data));
+			return Promise.all([
+				response.then(() => {
+					chai.expect(responseData.statusCode).to.equal(200);
+				}),
+				chai.expect(parsedResponse).to.eventually.have.property('id', 43),
+				chai.expect(parsedResponse).to.eventually.have.property('stringy', 43),
+				chai.expect(parsedResponse).to.not.eventually.have.property('hideMe'),
+				chai.expect(parsedResponse).to.eventually.have.property('createdAt'),
+				chai.expect(parsedResponse).to.eventually.have.property('updatedAt')
+			]);
+		});
+
+		it('returns 404 with data for hidden objects', function () {
+			getRequest.url += 'test.NoPropHidden/43';
+			const response = http.HTTP.handle(getRequest, responseData);
+			return Promise.all([
+				response.then(() => {
+					chai.expect(responseData.statusCode).to.equal(404);
+				}),
+				chai.expect(response).to.eventually.equal('Resource Not Found')
+			]);
+		});
 	});
 
 	describe('put', function () {

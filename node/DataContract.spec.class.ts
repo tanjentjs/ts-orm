@@ -9,6 +9,12 @@ export class StringProp extends DataContract {
 	@field()
 	public stringy: string;
 }
+export class HiddenProp extends DataContract {
+	@field()
+	public stringy: string;
+	@field(Types.string, true)
+	public hideMe: string;
+}
 export class FloatProp extends DataContract {
 	@field()
 	public floaty: number;
