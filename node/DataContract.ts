@@ -93,11 +93,11 @@ export abstract class DataContract implements IDataContract {
 		const fields: string[] = this.fields;
 		_.forEach(fields, (fieldName: string) => {
 			const value: any = this[fieldName];
-			
+
 			const type: Types = Reflect.getMetadata('ORM:type', this, fieldName);
 			const hidden: boolean = Reflect.getMetadata('ORM:hidden', this, fieldName);
 
-			if(!hidden) {
+			if (!hidden) {
 				switch (type) {
 					case(Types.dateTimeTz):
 						returnObj[fieldName] = value && value.toISOString();
