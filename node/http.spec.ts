@@ -19,8 +19,14 @@ describe('node/http', function() {
 			'./DataConnection',
 			'./DataConnection.spec.class',
 			'./DataContract.spec.class',
+			'./DataContract',
+			'./field',
+			'./relationships',
+			'./OneToOne',
 			'../shared/DataObject',
+			'../shared/Types',
 			'./connect',
+			'moment',
 			'debug'
 		]);
 

@@ -10,7 +10,18 @@ import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
 import { logger } from './connect';
 
+export interface IDataContractConstruct<T extends DataContract> {
+	new (
+		instance: any,
+		model: sequelize.Model<any, any>
+	): T;
+	name?: string;
+}
+
 export abstract class DataContract implements IDataContract {
+	// tslint:disable-next-line:no-unused-variable
+	private static contract = true;
+
 	private get fields(): string[] {
 		return Reflect.getMetadata('ORM:fields', this);
 	}

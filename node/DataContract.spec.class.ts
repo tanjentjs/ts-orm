@@ -1,6 +1,8 @@
 import {DataContract} from './DataContract';
+import {OneToOne, relatedField} from './relationships';
 import {field} from './field';
 import {Types} from '../shared/Types';
+import {register} from '../shared/DataObject';
 
 import * as moment from 'moment';
 
@@ -34,4 +36,16 @@ export class DateProp extends DataContract {
 export class BadProp extends DataContract {
 	@field(<any> 'a')
 	public dateThing: moment.Moment;
+}
+
+@register('test')
+export class OneToOneA extends DataContract {
+	@relatedField(() => OneToOneB)
+	public b: OneToOne<OneToOneB>;
+}
+
+@register('test')
+export class OneToOneB extends DataContract {
+	@relatedField(() => OneToOneA)
+	public a: OneToOne<OneToOneA>;
 }

@@ -12,6 +12,9 @@ import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
 
 export abstract class DataContract implements IDataContract {
+	// tslint:disable-next-line:no-unused-variable
+	private static contract = true;
+	
 	@field()
 	public id: number;
 	@field(Types.dateTimeTz)

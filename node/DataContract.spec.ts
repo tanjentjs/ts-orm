@@ -3,6 +3,7 @@ import * as chai from 'chai';
 import * as classTypes from './DataContract.spec.class';
 import * as moment from 'moment';
 import * as sinon from 'sinon';
+import * as mockConnect from '../mocks/connect';
 
 import {Sequelize, Model} from '../mocks/Sequelize';
 
@@ -21,6 +22,8 @@ describe('node/DataContract', function() {
 			'../shared/field',
 			'../shared/Types',
 			'./Types',
+			'./relationships',
+			'./OneToOne',
 			'moment',
 			'lodash',
 			'debug'
@@ -30,6 +33,12 @@ describe('node/DataContract', function() {
 		connect.connect('a', 'b', 'c');
 
 		classes = require('./DataContract.spec.class');
+
+		mockConnect.reset(connect);
+		var a = (new classes.OneToOneA());
+		a.b.fetch();
+		var b = (new classes.OneToOneB());
+		b.a.fetch();
 	});
 
 	describe('existing', function() {

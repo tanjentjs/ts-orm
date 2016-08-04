@@ -3,5 +3,6 @@ export enum Types {
 	integer,
 	bigInt,
 	float,
-	dateTimeTz
+	dateTimeTz,
+	relationshipOneToOne
 }

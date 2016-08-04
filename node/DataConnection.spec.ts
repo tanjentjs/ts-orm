@@ -15,6 +15,7 @@ describe('node/DataConnection', function() {
 		mockery.registerMock('sequelize', Sequelize);
 		mockery.registerAllowables([
 			'./connect',
+			'../connect',
 			'./DataContract',
 			'./DataConnection',
 			'./DataContract.spec.class',
@@ -23,7 +24,13 @@ describe('node/DataConnection', function() {
 			'./field',
 			'../shared/field',
 			'../shared/Types',
+			'../../shared/field',
+			'../../shared/Types',
 			'./Types',
+			'./relationships',
+			'./relatedField',
+			'./OneToOne',
+			'./RelationshipCache',
 			'moment',
 			'lodash',
 			'bunyan',
