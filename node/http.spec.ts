@@ -20,7 +20,8 @@ describe('node/http', function() {
 			'./DataConnection.spec.class',
 			'./DataContract.spec.class',
 			'../shared/DataObject',
-			'./connect'
+			'./connect',
+			'debug'
 		]);
 
 		connect = require('./connect');
