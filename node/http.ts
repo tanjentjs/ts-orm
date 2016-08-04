@@ -3,6 +3,7 @@ import * as http from 'http';
 import { DataContract } from './DataContract';
 import { DataConnection } from './DataConnection';
 import { registeredClasses } from '../shared/DataObject';
+import { logger } from './connect';
 
 export class HTTP {
 	public static handle(
@@ -28,8 +29,15 @@ export class HTTP {
 			if (HTTP.initialized[idx]) {
 				contract = HTTP.initialized[idx];
 			} else if (registeredClasses[idx]) {
-				HTTP.initialized[idx] = new registeredClasses[idx]();
-				contract = HTTP.initialized[idx];
+				const hidden = Reflect.getMetadata('ORM:apiHidden', registeredClasses[idx]);
+				logger.info('http', registeredClasses[idx].name, 'hidden', hidden);
+
+				if (!hidden) {
+					logger.debug('http', 'Creating ', registeredClasses[idx].name);
+
+					HTTP.initialized[idx] = new registeredClasses[idx]();
+					contract = HTTP.initialized[idx];
+				}
 			}
 
 			if (requestData.method === 'GET' && id !== undefined) {

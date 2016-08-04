@@ -9,10 +9,24 @@ export class NoProp extends DataConnection<Contracts.NoProp> {
 	}
 }
 
+@register('test', true)
+export class NoPropHidden extends DataConnection<Contracts.NoProp> {
+	protected getContract() {
+		return Contracts.NoProp;
+	}
+}
+
 @register('test')
 export class StringProp extends DataConnection<Contracts.StringProp> {
 	protected getContract() {
 		return Contracts.StringProp;
+	}
+}
+
+@register('test')
+export class HiddenProp extends DataConnection<Contracts.HiddenProp> {
+	protected getContract() {
+		return Contracts.HiddenProp;
 	}
 }
 

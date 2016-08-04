@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import {field as sharedField} from '../shared/field';
 import {Types} from '../shared/Types';
 
-export function field(type?: Types): (target: any, key: string) => any {
+export function field(type?: Types, hidden: boolean = false): (target: any, key: string) => any {
 	return function field(target: any, key: string) {
 		target['_' + key] = target[key];
 
@@ -56,6 +56,8 @@ export function field(type?: Types): (target: any, key: string) => any {
 			},
 			type
 		);
+
+		Reflect.defineMetadata('ORM:hidden', hidden, target, key);
 
 		return {
 			get: getter,

@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
+import { logger } from './connect';
 
 export abstract class DataContract implements IDataContract {
 	private get fields(): string[] {
@@ -31,7 +32,20 @@ export abstract class DataContract implements IDataContract {
 		for (const i in fields) {
 			if (data[fields[i]] !== undefined) {
 				// TODO: validation
-				const type: Types = Reflect.getMetadata("ORM:type", this, fields[i]);
+				const type: Types = Reflect.getMetadata('ORM:type', this, fields[i]);
+				const hidden: boolean = Reflect.getMetadata('ORM:hidden', this, fields[i]);
+
+				logger.info(
+					'DataContract',
+					(<any> this.constructor).name,
+					'.',
+					fields[i],
+					'type',
+					type,
+					'hidden',
+					hidden
+				);
+
 				switch (type) {
 					case(Types.dateTimeTz):
 						this[fields[i]] = moment(data[fields[i]]);
@@ -79,13 +93,18 @@ export abstract class DataContract implements IDataContract {
 		const fields: string[] = this.fields;
 		_.forEach(fields, (fieldName: string) => {
 			const value: any = this[fieldName];
-			const type: Types = Reflect.getMetadata("ORM:type", this, fieldName);
-			switch (type) {
-				case(Types.dateTimeTz):
-					returnObj[fieldName] = value && value.toISOString();
-					break;
-				default:
-					returnObj[fieldName] = value;
+			
+			const type: Types = Reflect.getMetadata('ORM:type', this, fieldName);
+			const hidden: boolean = Reflect.getMetadata('ORM:hidden', this, fieldName);
+
+			if(!hidden) {
+				switch (type) {
+					case(Types.dateTimeTz):
+						returnObj[fieldName] = value && value.toISOString();
+						break;
+					default:
+						returnObj[fieldName] = value;
+				}
 			}
 		});
 		return returnObj;

@@ -6,8 +6,6 @@ import {ILogger} from './ILogger';
 export let connection: any;
 export let logger: ILogger;
 
-debug.enable('ts-orm-error:*');
-
 /* istanbul ignore next */
 class DefaultLogger implements ILogger {
 	private debugs = {};
@@ -18,14 +16,14 @@ class DefaultLogger implements ILogger {
 			this.debugs[module] = debug('ts-orm:' + module);
 			this.debugs[module].log = console.log.bind(console);
 		}
-		this.debugs[module].apply(args);
+		this.debugs[module].apply(console, args);
 	}
 	public info(module: string, ...args: any[]): void {
 		if (!this.infos[module]) {
 			this.infos[module] = debug('ts-orm-info:' + module);
 			this.infos[module].log = console.info.bind(console);
 		}
-		this.infos[module].apply(args);
+		this.infos[module].apply(console, args);
 	}
 }
 
