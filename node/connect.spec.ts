@@ -11,7 +11,8 @@ describe('node/connect', function() {
 		mockery.registerMock('sequelize', Sequelize);
 		mockery.registerAllowables([
 			'./connect',
-			'lodash'
+			'lodash',
+			'debug'
 		]);
 
 		connect = require('./connect');

@@ -32,7 +32,8 @@ describe('node/DataConnection', function() {
 			'util',
 			'assert',
 			'events',
-			'stream'
+			'stream',
+			'debug'
 		]);
 
 		connect = require('./connect');

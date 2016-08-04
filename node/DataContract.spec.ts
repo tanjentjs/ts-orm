@@ -22,7 +22,8 @@ describe('node/DataContract', function() {
 			'../shared/Types',
 			'./Types',
 			'moment',
-			'lodash'
+			'lodash',
+			'debug'
 		]);
 
 		connect = require('./connect');

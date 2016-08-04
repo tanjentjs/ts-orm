@@ -5,6 +5,7 @@
     "node": "registry:env/node#6.0.0+20160622202520"
   },
   "dependencies": {
+    "debug": "registry:npm/debug#2.0.0+20160723033700",
     "lodash": "registry:npm/lodash#4.0.0+20160416211519",
     "sequelize": "registry:npm/sequelize#3.0.0+20160604152601"
   },
