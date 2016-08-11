@@ -9,7 +9,7 @@
     "coverage": "istanbul check-coverage",
     "coveralls": "cat coverage/lcov.info | ./node_modules/.bin/coveralls",
     "prepublish": "typings install && tsc",
-    "test": "npm run lint && npm run mocha && npm run coveralls && npm run coverage"
+    "test": "npm run lint && npm run mocha && npm run coveralls"
   },
   "repository": {
     "type": "git",
