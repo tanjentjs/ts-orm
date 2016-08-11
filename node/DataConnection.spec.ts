@@ -29,6 +29,7 @@ describe('node/DataConnection', function() {
 			'./Types',
 			'./relationships',
 			'./relatedField',
+			'./relationships/OneToOne',
 			'./OneToOne',
 			'./RelationshipCache',
 			'moment',
@@ -90,7 +91,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.NoProp",
+					"testNoProp",
 					{},
 					{
 						"freezeTableName": true
@@ -111,7 +112,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.StringProp",
+					"testStringProp",
 					{
 						"stringy": {
 							type: sequelize.STRING
@@ -136,7 +137,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.FloatProp",
+					"testFloatProp",
 					{
 						"floaty": {
 							type: sequelize.FLOAT
@@ -161,7 +162,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.IntProp",
+					"testIntProp",
 					{
 						"inty": {
 							type: sequelize.INTEGER
@@ -186,7 +187,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.BigIntProp",
+					"testBigIntProp",
 					{
 						"inty": {
 							type: sequelize.BIGINT
@@ -211,7 +212,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"test.DateProp",
+					"testDateProp",
 					{
 						"dateThing": {
 							type: sequelize.DATE
@@ -227,10 +228,8 @@ describe('node/DataConnection', function() {
 		describe('badProp', function () {
 
 			it('throws an error', function () {
-				chai.expect(() => {
-					const a = new classes.BadProp();
-					a.create();
-				}).to.throw(TypeError);
+				const a = new classes.BadProp();
+				return chai.expect(a.fetch(5)).to.eventually.be.rejectedWith(TypeError);
 			});
 		});
 	});

@@ -35,10 +35,6 @@ describe('node/DataContract', function() {
 		classes = require('./DataContract.spec.class');
 
 		mockConnect.reset(connect);
-		// var a = (new classes.OneToOneA());
-		// a.b.fetch();
-		// var b = (new classes.OneToOneB());
-		// b.a.fetch();
 	});
 
 	describe('existing', function() {
@@ -172,11 +168,12 @@ describe('node/DataContract', function() {
 			describe('save', function () {
 				it('creates an object', function () {
 					model.create.returns(Promise.resolve({}));
-					current.save();
 
-					const calls = model.create.getCalls();
-					chai.expect(calls.length).to.equal(1);
-					chai.expect(calls[0].args).to.deep.equal([{}]);
+					current.save().then(() => {
+						const calls = model.create.getCalls();
+						chai.expect(calls.length).to.equal(1);
+						chai.expect(calls[0].args).to.deep.equal([{}]);
+					})
 				});
 			});
 

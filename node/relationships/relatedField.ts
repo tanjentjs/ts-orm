@@ -1,7 +1,7 @@
 // DO NOT REMOVE THIS IMPORT it is required for this file to function
 // tslint:disable-next-line:no-unused-variable
 import * as reflectMetadata from 'reflect-metadata';
-import * as moment from 'moment';
+import * as sequelize from 'sequelize';
 
 import {field as sharedField} from '../../shared/field';
 import {Types} from '../../shared/Types';
@@ -45,6 +45,7 @@ export function relatedField<T extends DataContract>(
 		);
 
 		Reflect.defineMetadata('ORM:hidden', hidden, target, key);
+		Reflect.defineMetadata('ORM:relatedType', RelatedType, target, key);
 
 		return {
 			getter: getter,

@@ -36,7 +36,7 @@ export function register(moduleId: string, apiHidden: boolean = false) {
 	};
 }
 
-export function contract(moduleId: string) {
+export function contract(moduleId: string, apiHidden: boolean = false) {
 	return (target: new (...args: any[]) => IDataConnection<IDataContract> | IDataContract): any => {
 		const idx = moduleId + '.' + (<any> target).name;
 		if ((<any> target).contract === true) {

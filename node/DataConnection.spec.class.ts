@@ -59,3 +59,15 @@ export class BadProp extends DataConnection<Contracts.BadProp> {
 		return Contracts.BadProp;
 	}
 }
+
+export class OneToOneA extends DataConnection<Contracts.OneToOneA> {
+	protected getContract() {
+		return Contracts.OneToOneA;
+	}
+}
+
+export class OneToOneB extends DataConnection<Contracts.OneToOneB> {
+	protected getContract() {
+		return Contracts.OneToOneB;
+	}
+}
