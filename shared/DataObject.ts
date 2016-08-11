@@ -35,3 +35,16 @@ export function register(moduleId: string, apiHidden: boolean = false) {
 		}
 	};
 }
+
+export function contract(moduleId: string) {
+	return (target: new (...args: any[]) => IDataConnection<IDataContract> | IDataContract): any => {
+		const idx = moduleId + '.' + (<any> target).name;
+		if ((<any> target).contract === true) {
+			Reflect.defineMetadata('ORM:dbId', idx, target);
+		} else {
+			registeredClasses[idx] = target;
+			Reflect.defineMetadata('ORM:registeredIndex', idx, target);
+			Reflect.defineMetadata('ORM:apiHidden', apiHidden, target);
+		}
+	};
+}

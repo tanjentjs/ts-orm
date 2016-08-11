@@ -4,16 +4,10 @@ import * as reflectMetadata from 'reflect-metadata';
 import * as sequelize from 'sequelize';
 import * as _ from 'lodash';
 
-import { Types } from '../shared/Types';
 import { IDataConnection } from '../shared/DataObject';
-import { connection } from './connect';
 import {DataContract} from './DataContract';
 
 export abstract class DataConnection<T extends DataContract> implements IDataConnection<T> {
-
-	private static syncedModels: {
-		[modelName: string]: sequelize.Model<any, any>;
-	} = {};
 
 	private _dummyContract: T = null;
 	private get dummyContract(): T {
@@ -31,74 +25,18 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 		return this._fields;
 	}
 
+	private get model(): sequelize.Model<any, any> {
+		return this.getContract().getSequelizeModel();
+	}
+
 	// This is used in some of the decorators
 	// tslint:disable-next-line:no-unused-variable
 	private instance: any = null;
 
-	private get model(): sequelize.Model<any, any> {
-		return DataConnection.syncedModels[(<any> this.constructor).name];
-	}
-	private set model(val: sequelize.Model<any, any>) {
-		DataConnection.syncedModels[(<any> this.constructor).name] = val;
-		// TODO make updates more graceful
-		val.sync();
-	}
-
 	constructor(injector?: any) {
-		let className = (<any> this.constructor).name;
-
-		if (!this.model) {
-			const model: any = {};
-			const fields: string[] = this.fields;
-			_.forEach(fields, (fieldName) => {
-				const type: Types = Reflect.getMetadata(
-					"ORM:type",
-					this.dummyContract,
-					fieldName
-				);
-
-				switch (type) {
-					case Types.string:
-						model[fieldName] = {
-							type: sequelize.STRING
-						};
-						break;
-					case Types.float:
-						model[fieldName] = {
-							type: sequelize.FLOAT
-						};
-						break;
-					case Types.integer:
-						model[fieldName] = {
-							type: sequelize.INTEGER
-						};
-						break;
-					case Types.bigInt:
-						model[fieldName] = {
-							type: sequelize.BIGINT
-						};
-						break;
-					case Types.dateTimeTz:
-						model[fieldName] = {
-							type: sequelize.DATE
-						};
-						break;
-					default:
-						throw new TypeError(
-							'Field of unknown type found! ' +
-							'Field Name:' + fieldName + ' ' +
-							'Field Type: ' + type
-						);
-				}
-			});
-			this.model = connection.define(
-				className,
-				model,
-				{
-					freezeTableName: true // Model tableName will be the same as the model name
-				}
-			);
-		}
+		// Load the model once to make sure it gets created at initialization
+		// instead of when it's first acted upon
+		this.getContract().getSequelizeModel();
 	}
 
 	public fetch(id: number): Promise<T> {
@@ -136,8 +74,8 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	/**
 	 * This feeds the data contract into the system
 	 */
-	protected abstract getContract(): new(
-		instance: any,
-		model: sequelize.Model<any, any>
-	) => T;
+	protected abstract getContract(): {
+		new(instance: any, model: sequelize.Model<any, any>): T;
+		getSequelizeModel(): sequelize.Model<any, any>;
+	};
 }

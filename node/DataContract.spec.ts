@@ -35,10 +35,10 @@ describe('node/DataContract', function() {
 		classes = require('./DataContract.spec.class');
 
 		mockConnect.reset(connect);
-		var a = (new classes.OneToOneA());
-		a.b.fetch();
-		var b = (new classes.OneToOneB());
-		b.a.fetch();
+		// var a = (new classes.OneToOneA());
+		// a.b.fetch();
+		// var b = (new classes.OneToOneB());
+		// b.a.fetch();
 	});
 
 	describe('existing', function() {

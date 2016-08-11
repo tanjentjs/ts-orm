@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
-import { logger } from './connect';
+import { logger, connection } from './connect';
 
 export interface IDataContractConstruct<T extends DataContract> {
 	new (
@@ -19,8 +19,75 @@ export interface IDataContractConstruct<T extends DataContract> {
 }
 
 export abstract class DataContract implements IDataContract {
-	// tslint:disable-next-line:no-unused-variable
-	private static contract = true;
+	public static moduleName: string;
+	public static name: string;
+
+	public static getSequelizeModel(): sequelize.Model<any, any> {
+		if (DataContract.models[this.moduleName] === undefined) {
+			DataContract.models[this.moduleName] = {};
+		}
+		if (DataContract.models[this.moduleName][this.name] === undefined) {
+			const constructor: any = this;
+			const instance: DataContract = (new constructor(null, null));
+			const fields = instance.fields;
+			const model: any = {};
+			_.forEach(fields, (fieldName) => {
+				const type: Types = Reflect.getMetadata(
+					"ORM:type",
+					instance,
+					fieldName
+				);
+
+				switch (type) {
+					case Types.string:
+						model[fieldName] = {
+							type: sequelize.STRING
+						};
+						break;
+					case Types.float:
+						model[fieldName] = {
+							type: sequelize.FLOAT
+						};
+						break;
+					case Types.integer:
+						model[fieldName] = {
+							type: sequelize.INTEGER
+						};
+						break;
+					case Types.bigInt:
+						model[fieldName] = {
+							type: sequelize.BIGINT
+						};
+						break;
+					case Types.dateTimeTz:
+						model[fieldName] = {
+							type: sequelize.DATE
+						};
+						break;
+					default:
+						throw new TypeError(
+							'Field of unknown type found! ' +
+							'Field Name:' + fieldName + ' ' +
+							'Field Type: ' + type
+						);
+				}
+			});
+			DataContract.models[this.moduleName][this.name] = connection.define(
+				this.moduleName + '.' + this.name,
+				model,
+				{
+					freezeTableName: true // Model tableName will be the same as the model name
+				}
+			);
+		}
+		return DataContract.models[this.moduleName][this.name];
+	}
+
+	private static models: {
+		[moduleName: string]: {
+			[contractName: string]: sequelize.Model<any, any>;
+		}
+	} = {};
 
 	private get fields(): string[] {
 		return Reflect.getMetadata('ORM:fields', this);

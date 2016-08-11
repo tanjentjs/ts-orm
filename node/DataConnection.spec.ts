@@ -90,7 +90,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"NoProp",
+					"test.NoProp",
 					{},
 					{
 						"freezeTableName": true
@@ -111,7 +111,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"StringProp",
+					"test.StringProp",
 					{
 						"stringy": {
 							type: sequelize.STRING
@@ -136,7 +136,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"FloatProp",
+					"test.FloatProp",
 					{
 						"floaty": {
 							type: sequelize.FLOAT
@@ -161,7 +161,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"IntProp",
+					"test.IntProp",
 					{
 						"inty": {
 							type: sequelize.INTEGER
@@ -186,7 +186,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"BigIntProp",
+					"test.BigIntProp",
 					{
 						"inty": {
 							type: sequelize.BIGINT
@@ -211,7 +211,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"DateProp",
+					"test.DateProp",
 					{
 						"dateThing": {
 							type: sequelize.DATE
