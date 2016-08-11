@@ -9,22 +9,6 @@ import { DataContract, IDataContractConstruct } from './DataContract';
 
 export abstract class DataConnection<T extends DataContract> implements IDataConnection<T> {
 
-	private _dummyContract: T = null;
-	private get dummyContract(): T {
-		if (!this._dummyContract) {
-			this._dummyContract = new (this.getContract())(null);
-		}
-		return this._dummyContract;
-	}
-
-	private _fields: string[] = [];
-	private get fields(): string[] {
-		if (!this._fields.length) {
-			this._fields = Reflect.getMetadata('ORM:fields', this.dummyContract);
-		}
-		return this._fields;
-	}
-
 	private get model(): Promise<sequelize.Model<any, any>> {
 		return this.getContract().getSequelizeModel();
 	}
