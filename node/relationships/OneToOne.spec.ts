@@ -1,11 +1,9 @@
 import * as mockery from 'mockery';
 import * as chai from 'chai';
 import * as classTypes from '../DataContract.spec.class';
-import * as moment from 'moment';
-import * as sinon from 'sinon';
 import * as mockConnect from '../../mocks/connect';
 
-import {Sequelize, Model} from '../../mocks/Sequelize';
+import {Sequelize} from '../../mocks/Sequelize';
 
 describe('node/DataContract', function() {
 	let connect: any;

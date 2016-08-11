@@ -1,7 +1,6 @@
 // DO NOT REMOVE THIS IMPORT it is required for this file to function
 // tslint:disable-next-line:no-unused-variable
 import * as reflectMetadata from 'reflect-metadata';
-import * as sequelize from 'sequelize';
 
 import {field as sharedField} from '../../shared/field';
 import {Types} from '../../shared/Types';

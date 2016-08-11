@@ -141,13 +141,13 @@ export abstract class DataContract implements IDataContract {
 
 			_.forEach(fields, (fieldName) => {
 				const type: Types = Reflect.getMetadata(
-					"ORM:type",
+					'ORM:type',
 					instance,
 					fieldName
 				);
-				const relatedTypeFn:() => IDataContractConstruct<any> =
+				const relatedTypeFn: () => IDataContractConstruct<any> =
 					Reflect.getMetadata(
-						"ORM:relatedType",
+						'ORM:relatedType',
 						instance,
 						fieldName
 					);
@@ -190,7 +190,7 @@ export abstract class DataContract implements IDataContract {
 	private static syncAll(): Promise<void> {
 		const syncList = DataContract.needsSync;
 		DataContract.needsSync = [];
-		const syncs: Promise<any>[] = []
+		const syncs: Promise<any>[] = [];
 		// tslint:disable-next-line:forin
 		for (const i in syncList) {
 			syncs.push(syncList[i].sync());
