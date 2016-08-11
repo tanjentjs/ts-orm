@@ -5,7 +5,7 @@ import {Types} from '../shared/Types';
 
 import * as moment from 'moment';
 
-class BaseContract extends DataContract {
+export class BaseContract extends DataContract {
 	public static moduleName = 'test';
 }
 

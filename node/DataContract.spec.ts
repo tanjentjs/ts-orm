@@ -173,7 +173,7 @@ describe('node/DataContract', function() {
 						const calls = model.create.getCalls();
 						chai.expect(calls.length).to.equal(1);
 						chai.expect(calls[0].args).to.deep.equal([{}]);
-					})
+					});
 				});
 			});
 
