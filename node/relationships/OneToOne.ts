@@ -1,6 +1,6 @@
 import * as sequelize from 'sequelize';
 
-import { DataContract, IDataContractConstruct } from '../DataContract';
+import {DataContract, IDataContractConstruct, getFieldsSources} from '../DataContract';
 
 export class OneToOne<T extends DataContract> {
 
@@ -58,6 +58,8 @@ export class OneToOne<T extends DataContract> {
 	}
 
 	private currentValue: T = null;
+	/** This will only be set after a new value is set to this object and isFirst returns true */
+	private idName: string = null;
 	private changedModels: DataContract[];
 
 	public constructor(private parent: DataContract,
@@ -77,9 +79,12 @@ export class OneToOne<T extends DataContract> {
 		if ((<IDataContractConstruct<any>> this.parent.constructor).isFirst(this.target())) {
 			return this.target().getSequelizeModel().then(
 				(targetModel: sequelize.Model<any, any>) => {
-					const idName: string = (<any> targetModel).name + 'Id';
+					this.idName = (<any> targetModel).name + 'Id';
 
-					(<any> this.parent).instance.set(idName, newModel.id);
+					if ((<any> this.parent).instance) {
+						(<any> this.parent).instance.set(this.idName, newModel && newModel.id);
+					}
+
 					this.currentValue = newModel;
 				}
 			);
@@ -96,12 +101,16 @@ export class OneToOne<T extends DataContract> {
 
 					const idName: string = (<any> fromModel).name + 'Id';
 
-					(<any> oldModel).instance.set(idName, null);
-					this.changedModels.push(oldModel);
+					if (oldModel) {
+						(<any> oldModel).instance.set(idName, null);
+						this.changedModels.push(oldModel);
+					}
 
-					(<any> newModel).instance.set(idName, this.parent.id);
-					this.changedModels.push(newModel);
-					this.currentValue = newModel;
+					if (newModel) {
+						(<any> newModel).instance.set(idName, this.parent.id);
+						this.changedModels.push(newModel);
+						this.currentValue = newModel;
+					}
 				}
 			);
 		}
@@ -118,5 +127,16 @@ export class OneToOne<T extends DataContract> {
 		return Promise.all(savePromises).then(
 			() => { /* */ }
 		);
+	}
+
+	public setField(returnObj, reqSrc: getFieldsSources): any {
+		if (reqSrc === getFieldsSources.save && this.idName) {
+			if (this.currentValue) {
+				returnObj[this.idName] = this.currentValue.id;
+			} else {
+				returnObj[this.idName] = null;
+			}
+		}
+		return returnObj;
 	}
 }

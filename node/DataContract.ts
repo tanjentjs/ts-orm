@@ -22,6 +22,11 @@ export interface IDataContractConstruct<T extends DataContract> {
 
 type DataContractType = typeof DataContract;
 
+export enum getFieldsSources {
+	save,
+	toJSON
+}
+
 export abstract class DataContract implements IDataContract {
 	public static moduleName: string;
 	public static name: string;
@@ -159,6 +164,8 @@ export abstract class DataContract implements IDataContract {
 					const relatedType: IDataContractConstruct<any> = relatedTypeFn();
 
 					relationships.push((<any> relatedType).getBaseModel().then((relatedModel) => {
+
+						// tslint:disable-next-line:switch-default
 						switch (type) {
 							case Types.relationshipOneToOne:
 								OneToOne.addRelationship(
@@ -167,8 +174,6 @@ export abstract class DataContract implements IDataContract {
 									relatedType,
 									relatedModel
 								);
-								break;
-							default:
 								break;
 						}
 
@@ -249,13 +254,16 @@ export abstract class DataContract implements IDataContract {
 
 	public save(): Promise<this> {
 		if (this.instance) {
-			return this.instance.save().then(() => this);
+			return this.instance.save()
+				.then(this.saveRelated.bind(this))
+				.then(() => this);
 		} else {
 			return (<DataContractType> this.constructor)
 				.getSequelizeModel()
 				.then((model) => {
-					return model.create(this.getFields());
+					return model.create(this.getFields(getFieldsSources.save));
 				})
+				.then(this.saveRelated.bind(this))
 				.then((sqlData: any) => {
 					this.instance = sqlData;
 					return this;
@@ -272,15 +280,15 @@ export abstract class DataContract implements IDataContract {
 	}
 
 	private toJSON(): any {
-		const returnObj: any = this.getFields();
+		const returnObj: any = this.getFields(getFieldsSources.toJSON);
 		returnObj.id = this.id;
 		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
 		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
 		return returnObj;
 	}
 
-	private getFields(): any {
-		const returnObj: any = {};
+	private getFields(reqSrc: getFieldsSources): any {
+		let returnObj: any = {};
 		const fields: string[] = this.fields;
 		_.forEach(fields, (fieldName: string) => {
 			const value: any = this[fieldName];
@@ -293,11 +301,35 @@ export abstract class DataContract implements IDataContract {
 					case(Types.dateTimeTz):
 						returnObj[fieldName] = value && value.toISOString();
 						break;
+					case(Types.relationshipOneToOne):
+						if (value) {
+							returnObj = (<OneToOne<any>> value).setField(returnObj, reqSrc);
+						}
+						break;
 					default:
 						returnObj[fieldName] = value;
 				}
 			}
 		});
 		return returnObj;
+	}
+
+	private saveRelated(sqlData: any) {
+		const promises: Promise<any>[] = [];
+
+		const fields: string[] = this.fields;
+		_.forEach(fields, (fieldName: string) => {
+			const type: Types = Reflect.getMetadata('ORM:type', this, fieldName);
+			const value: any = this[fieldName];
+
+			// tslint:disable-next-line:switch-default
+			switch (type) {
+				case(Types.relationshipOneToOne):
+					promises.push((<OneToOne<any>> value).save());
+					break;
+			}
+		});
+
+		return Promise.all(promises).then(() => sqlData);
 	}
 }
