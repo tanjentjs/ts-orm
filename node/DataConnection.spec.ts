@@ -17,6 +17,7 @@ describe('node/DataConnection', function() {
 			'./connect',
 			'../connect',
 			'./DataContract',
+			'../DataContract',
 			'./DataConnection',
 			'./DataContract.spec.class',
 			'./DataConnection.spec.class',

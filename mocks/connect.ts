@@ -15,6 +15,7 @@ export function reset(connect: any) {
 	model.findById.returns(Promise.resolve(null));
 
 	model.findAll.returns(Promise.resolve([]));
+	model.findOne.returns(Promise.resolve(null));
 
 	connect.connection.define.returns(model);
 }

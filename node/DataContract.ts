@@ -9,7 +9,7 @@ import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
 import { logger, connection } from './connect';
-import {OneToOne} from "./relationships/OneToOne";
+import {OneToOne} from './relationships/OneToOne';
 
 export interface IDataContractConstruct<T extends DataContract> {
 	new (
@@ -188,6 +188,7 @@ export abstract class DataContract implements IDataContract {
 
 			return Promise.all(relationships).then(() => thisModel);
 		} catch (e) {
+			/* istanbul ignore next */
 			return <any> Promise.reject(e);
 		}
 	}

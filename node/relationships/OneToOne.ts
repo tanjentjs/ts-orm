@@ -4,27 +4,31 @@ import {DataContract, IDataContractConstruct, getFieldsSources} from '../DataCon
 
 export class OneToOne<T extends DataContract> {
 
-	public static fetch<U extends DataContract>(from: DataContract,
-	                                            target: IDataContractConstruct<U>): Promise<U> {
+	public static fetch<U extends DataContract>(
+		from: DataContract,
+		target: IDataContractConstruct<U>
+	): Promise<U> {
 		return Promise.all(
 			[
 				target.getSequelizeModel(),
 				(<any> from.constructor).getSequelizeModel()
 			]
-		).then(
-			(models: sequelize.Model<any, any>[]) => {
-				const targetModel: sequelize.Model<any, any> = models[0];
-				const fromModel: sequelize.Model<any, any> = models[1];
+		).then((models: sequelize.Model<any, any>[]): U | Promise<U> => {
+			const targetModel: sequelize.Model<any, any> = models[0];
+			const fromModel: sequelize.Model<any, any> = models[1];
+			try {
 				if ((<IDataContractConstruct<any>> from.constructor).isFirst(target)) {
 					const idName: string = (<any> targetModel).name + 'Id';
-					const id: number = (<any> from).instance.get(idName);
+					if ((<any> from).instance) {
+						const id: number = (<any> from).instance.get(idName);
 
-					if (id) {
-						return targetModel.findById(id).then(
-							(data) => {
-								return new target(data);
-							}
-						);
+						if (id !== null && id !== undefined) {
+							return targetModel.findById(id).then(
+								(data) => {
+									return new target(data);
+								}
+							);
+						}
 					}
 					return null;
 				} else {
@@ -33,21 +37,26 @@ export class OneToOne<T extends DataContract> {
 					condition.where[idName] = from.id;
 					return targetModel.findOne(<any> condition).then(
 						(data) => {
-							if (!data) {
-								return null;
+							if (data) {
+								return new target(data);
 							}
-							return new target(data);
+							return null;
 						}
 					);
 				}
+			} catch (e) {
+				/* istanbul ignore next */
+				return <any> Promise.reject(e);
 			}
-		);
+		});
 	}
 
-	public static addRelationship(src: IDataContractConstruct<any>,
-	                              srcModel: sequelize.Model<any, any>,
-	                              dest: IDataContractConstruct<any>,
-	                              destModel: sequelize.Model<any, any>): void {
+	public static addRelationship(
+		src: IDataContractConstruct<any>,
+		srcModel: sequelize.Model<any, any>,
+		dest: IDataContractConstruct<any>,
+		destModel: sequelize.Model<any, any>
+	): void {
 		if (src.isFirst(dest)) {
 			srcModel.belongsTo(destModel);
 			destModel.hasOne(srcModel);
@@ -70,7 +79,10 @@ export class OneToOne<T extends DataContract> {
 		if (this.currentValue) {
 			return Promise.resolve(this.currentValue);
 		}
-		return OneToOne.fetch<T>(this.parent, this.target());
+		return OneToOne.fetch<T>(this.parent, this.target()).then((result) => {
+			this.currentValue = result;
+			return result;
+		});
 	}
 
 	public set(newModel: T): Promise<void> {
@@ -79,13 +91,18 @@ export class OneToOne<T extends DataContract> {
 		if ((<IDataContractConstruct<any>> this.parent.constructor).isFirst(this.target())) {
 			return this.target().getSequelizeModel().then(
 				(targetModel: sequelize.Model<any, any>) => {
-					this.idName = (<any> targetModel).name + 'Id';
+					try {
+						this.idName = (<any> targetModel).name + 'Id';
 
-					if ((<any> this.parent).instance) {
-						(<any> this.parent).instance.set(this.idName, newModel && newModel.id);
+						if ((<any> this.parent).instance) {
+							(<any> this.parent).instance.set(this.idName, newModel && newModel.id);
+						}
+
+						this.currentValue = newModel;
+					} catch (e) {
+						/* istanbul ignore next */
+						return Promise.reject(e);
 					}
-
-					this.currentValue = newModel;
 				}
 			);
 		} else {
@@ -96,20 +113,25 @@ export class OneToOne<T extends DataContract> {
 				]
 			).then(
 				(items) => {
-					const fromModel: sequelize.Model<any, any> = items[0];
-					const oldModel: T = items[1];
+					try {
+						const fromModel: sequelize.Model<any, any> = items[0];
+						const oldModel: T = items[1];
 
-					const idName: string = (<any> fromModel).name + 'Id';
+						const idName: string = (<any> fromModel).name + 'Id';
 
-					if (oldModel) {
-						(<any> oldModel).instance.set(idName, null);
-						this.changedModels.push(oldModel);
-					}
+						if (oldModel) {
+							(<any> oldModel).instance.set(idName, null);
+							this.changedModels.push(oldModel);
+						}
 
-					if (newModel) {
-						(<any> newModel).instance.set(idName, this.parent.id);
-						this.changedModels.push(newModel);
-						this.currentValue = newModel;
+						if (newModel) {
+							(<any> newModel).instance.set(idName, this.parent.id);
+							this.changedModels.push(newModel);
+							this.currentValue = newModel;
+						}
+					} catch (e) {
+						/* istanbul ignore next */
+						return Promise.reject(e);
 					}
 				}
 			);
