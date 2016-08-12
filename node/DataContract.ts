@@ -261,10 +261,10 @@ export abstract class DataContract implements IDataContract {
 		} else {
 			return (<DataContractType> this.constructor)
 				.getSequelizeModel()
-				.then((model) => {
+				.then(this.saveRelated.bind(this))
+				.then((model: sequelize.Model<any, any>) => {
 					return model.create(this.getFields(getFieldsSources.save));
 				})
-				.then(this.saveRelated.bind(this))
 				.then((sqlData: any) => {
 					this.instance = sqlData;
 					return this;
@@ -315,7 +315,7 @@ export abstract class DataContract implements IDataContract {
 		return returnObj;
 	}
 
-	private saveRelated(sqlData: any) {
+	private saveRelated<T>(model: T): Promise<T> {
 		const promises: Promise<any>[] = [];
 
 		const fields: string[] = this.fields;
@@ -331,6 +331,6 @@ export abstract class DataContract implements IDataContract {
 			}
 		});
 
-		return Promise.all(promises).then(() => sqlData);
+		return Promise.all(promises).then(() => model);
 	}
 }

@@ -1,6 +1,5 @@
 import * as mockery from 'mockery';
 import * as chai from 'chai';
-import * as sequelize from 'sequelize';
 import * as sinon from 'sinon';
 
 import * as classTypes from '../DataContract.spec.class';
@@ -8,7 +7,7 @@ import * as mockConnect from '../../mocks/connect';
 
 import {Sequelize} from '../../mocks/Sequelize';
 
-describe('node/DataContract', function() {
+describe('node/relationships/OneToOne', function() {
 	let connect: any;
 	let classes: any;
 	let instance: {
@@ -90,7 +89,7 @@ describe('node/DataContract', function() {
 			fetch.then((result) => {
 				chai.expect(result).to.be.an.instanceof(classes.OneToOneB);
 
-				const args = mockConnect.model.findOne.args
+				const args = mockConnect.model.findOne.args;
 				chai.expect(args).to.deep.equal([
 					[
 						{
@@ -160,6 +159,69 @@ describe('node/DataContract', function() {
 				]);
 			})
 		]);
+	});
+
+	it('Is not included in the json', function () {
+		instance.get.withArgs('OneToOneBId').returns(0);
+		mockConnect.model.findOne.returns(Promise.resolve(instance));
+		(<any> mockConnect.model).name = 'OneToOneB';
+
+		const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
+		return b.a.fetch().then(() => {
+			const obj = JSON.parse(b.serialize());
+			chai.expect(Object.getOwnPropertyNames(obj)).to.deep.equal([
+				'createdAt',
+				'updatedAt'
+			]);
+		});
+	});
+
+	it('Does not add to a create when not set', function () {
+		instance.get.withArgs('OneToOneBId').returns(0);
+		mockConnect.model.create.returns(Promise.resolve(instance));
+		(<any> mockConnect.model).name = 'OneToOneB';
+
+		const b: classTypes.OneToOneB = new classes.OneToOneB();
+		return b.save().then(() => {
+			const args = mockConnect.model.create.args;
+			chai.expect(args).to.deep.equal([
+				[ {} ]
+			]);
+		});
+	});
+
+	it('Does add to a create when not set (existing)', function () {
+		instance.get.withArgs('id').returns(0);
+		mockConnect.model.create.returns(Promise.resolve(instance));
+		(<any> mockConnect.model).name = 'OneToOneB';
+
+		const b: classTypes.OneToOneB = new classes.OneToOneB();
+		b.a.set(new classes.OneToOneA(instance));
+		return b.save().then(() => {
+			const args = mockConnect.model.create.args;
+			chai.expect(args).to.deep.equal([
+				[ {
+					OneToOneBId: 0
+				} ]
+			]);
+		});
+	});
+
+	it('Does add to a create when not set (new)', function () {
+		instance.get.withArgs('id').returns(0);
+		mockConnect.model.create.returns(Promise.resolve(instance));
+		(<any> mockConnect.model).name = 'OneToOneB';
+
+		const b: classTypes.OneToOneB = new classes.OneToOneB();
+		b.a.set(new classes.OneToOneA());
+		return b.save().then(() => {
+			const args = mockConnect.model.create.args;
+			chai.expect(args).to.deep.equal([
+				[ {
+					OneToOneBId: 0
+				} ]
+			]);
+		});
 	});
 
 	after(function() {
