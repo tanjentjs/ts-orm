@@ -31,6 +31,7 @@ export function relatedField<T extends DataContract>(
 			}
 			return this['_' + key];
 		};
+		/* istanbul ignore next */
 		const setter = () => { /* */ };
 
 		sharedField(

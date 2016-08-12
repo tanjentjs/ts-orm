@@ -69,7 +69,7 @@ export class OneToOne<T extends DataContract> {
 	private currentValue: T = null;
 	/** This will only be set after a new value is set to this object and isFirst returns true */
 	private idName: string = null;
-	private changedModels: DataContract[];
+	private changedModels: DataContract[] = [];
 
 	public constructor(private parent: DataContract,
 	                   private target: () => IDataContractConstruct<T>) {
@@ -99,6 +99,11 @@ export class OneToOne<T extends DataContract> {
 						}
 
 						this.currentValue = newModel;
+
+						if (!newModel.createdAt) { // If the passed model is new
+							// Mark it as changed so we can get the ID later
+							this.changedModels.push(newModel);
+						}
 					} catch (e) {
 						/* istanbul ignore next */
 						return Promise.reject(e);
