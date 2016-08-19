@@ -251,14 +251,16 @@ describe('node/http', function() {
 
 		it('explodes on exceptions', function () {
 			putRequest.url += 'test.StringProp/43';
-			delete object.save;
+			putRequest.on.withArgs('data').callsArgWith(1, '{"stringy": "123123"}');
+			const oldLogger = connect.logger;
+			delete connect.logger;
 			const response = http.HTTP.handle(putRequest, responseData);
 			return Promise.all([
-				response.then(() => {
-					chai.expect(responseData.statusCode).to.equal(412);
-				}),
-				chai.expect(response).to.eventually.equal('"Save Failed"')
-			]);
+				chai.expect(response).to.eventually.be.rejected
+			]).then(() => connect.logger = oldLogger, (e) => {
+				connect.logger = oldLogger;
+				return Promise.reject(e);
+			});
 		});
 	});
 

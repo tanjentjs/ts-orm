@@ -127,13 +127,17 @@ export class HTTP {
 			(data: DataContract) => {
 				return HTTP.fetchBody(requestData, responseData)
 					.then((bodyData: any) => {
-						data.loadData(bodyData);
-						return data.save().then(() => {
-							return HTTP.respondOk(responseData, data.serialize());
-						}, () => {
-							responseData.statusCode = 412;
-							return '"Save Failed"';
-						});
+						try {
+							data.loadData(bodyData);
+							return data.save().then(() => {
+								return HTTP.respondOk(responseData, data.serialize());
+							}, () => {
+								responseData.statusCode = 412;
+								return '"Save Failed"';
+							});
+						} catch (e) {
+							return <Promise<any>> Promise.reject(e);
+						}
 					})
 					.catch((err: any) => {
 						if (err.message && err.message === 'Malformed JSON') {
