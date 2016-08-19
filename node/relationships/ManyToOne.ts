@@ -53,10 +53,6 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 		return returnObj;
 	}
 
-	protected getValue(): Promise<T> {
-		return ManyToOne.fetch<T>(this.parent, this.target());
-	}
-
 	protected internalSet(newModel: T, updateRelated: boolean): Promise<any | void> {
 		return this.target().getSequelizeModel().then(
 			(targetModel: sequelize.Model<any, any>) => {
@@ -80,5 +76,9 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 				}
 			}
 		);
+	}
+
+	protected getValue(): Promise<T> {
+		return ManyToOne.fetch<T>(this.parent, this.target());
 	}
 }
