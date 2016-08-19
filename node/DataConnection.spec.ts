@@ -15,7 +15,9 @@ describe('node/DataConnection', function() {
 		mockery.registerMock('sequelize', Sequelize);
 		mockery.registerAllowables([
 			'./connect',
+			'../connect',
 			'./DataContract',
+			'../DataContract',
 			'./DataConnection',
 			'./DataContract.spec.class',
 			'./DataConnection.spec.class',
@@ -23,7 +25,14 @@ describe('node/DataConnection', function() {
 			'./field',
 			'../shared/field',
 			'../shared/Types',
+			'../../shared/field',
+			'../../shared/Types',
 			'./Types',
+			'./relationships',
+			'./relatedField',
+			'./relationships/OneToOne',
+			'./OneToOne',
+			'./RelationshipCache',
 			'moment',
 			'lodash',
 			'bunyan',
@@ -83,7 +92,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"NoProp",
+					"testNoProp",
 					{},
 					{
 						"freezeTableName": true
@@ -104,7 +113,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"StringProp",
+					"testStringProp",
 					{
 						"stringy": {
 							type: sequelize.STRING
@@ -129,7 +138,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"FloatProp",
+					"testFloatProp",
 					{
 						"floaty": {
 							type: sequelize.FLOAT
@@ -154,7 +163,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"IntProp",
+					"testIntProp",
 					{
 						"inty": {
 							type: sequelize.INTEGER
@@ -179,7 +188,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"BigIntProp",
+					"testBigIntProp",
 					{
 						"inty": {
 							type: sequelize.BIGINT
@@ -204,7 +213,7 @@ describe('node/DataConnection', function() {
 
 				chai.expect(calls.length).to.equal(1);
 				chai.expect(calls[0].args).to.deep.equal([
-					"DateProp",
+					"testDateProp",
 					{
 						"dateThing": {
 							type: sequelize.DATE
@@ -220,10 +229,8 @@ describe('node/DataConnection', function() {
 		describe('badProp', function () {
 
 			it('throws an error', function () {
-				chai.expect(() => {
-					const a = new classes.BadProp();
-					a.create();
-				}).to.throw(TypeError);
+				const a = new classes.BadProp();
+				return chai.expect(a.fetch(5)).to.eventually.be.rejectedWith(TypeError);
 			});
 		});
 	});

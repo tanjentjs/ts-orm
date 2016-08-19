@@ -1,22 +1,21 @@
 import * as sinon from 'sinon';
+import * as sequelize from './Sequelize';
 
-export const model = {
-	create: sinon.stub(),
-	findAll: sinon.stub(),
-	findById: sinon.stub(),
-	sync: sinon.stub()
-};
+const pristineModel = new sequelize.Model('');
+
+export const model = new sequelize.Model('');
 
 export function reset(connect: any) {
-	model.create = sinon.stub();
+	for (const prop in pristineModel) {
+		if (pristineModel[prop].name === 'proxy') {
+			model[prop] = sinon.stub();
+		}
+	}
 
-	model.findById = sinon.stub();
 	model.findById.returns(Promise.resolve(null));
 
-	model.findAll = sinon.stub();
 	model.findAll.returns(Promise.resolve([]));
-
-	model.sync = sinon.stub();
+	model.findOne.returns(Promise.resolve(null));
 
 	connect.connection.define.returns(model);
 }

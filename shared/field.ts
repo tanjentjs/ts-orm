@@ -25,7 +25,7 @@ export function field(target: any, key: string, actions: IActions, type?: Types)
 		});
 
 		if (!type) {
-			const jsType: any = Reflect.getMetadata("design:type", target, key);
+			const jsType: any = Reflect.getMetadata('design:type', target, key);
 			switch (jsType.name) {
 				case 'String':
 					type = Types.string;

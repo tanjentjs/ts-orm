@@ -3,6 +3,7 @@ import * as chai from 'chai';
 import * as classTypes from './DataContract.spec.class';
 import * as moment from 'moment';
 import * as sinon from 'sinon';
+import * as mockConnect from '../mocks/connect';
 
 import {Sequelize, Model} from '../mocks/Sequelize';
 
@@ -21,6 +22,9 @@ describe('node/DataContract', function() {
 			'../shared/field',
 			'../shared/Types',
 			'./Types',
+			'./relationships',
+			'./OneToOne',
+			'./relationships/OneToOne',
 			'moment',
 			'lodash',
 			'debug'
@@ -30,6 +34,8 @@ describe('node/DataContract', function() {
 		connect.connect('a', 'b', 'c');
 
 		classes = require('./DataContract.spec.class');
+
+		mockConnect.reset(connect);
 	});
 
 	describe('existing', function() {
@@ -163,11 +169,12 @@ describe('node/DataContract', function() {
 			describe('save', function () {
 				it('creates an object', function () {
 					model.create.returns(Promise.resolve({}));
-					current.save();
 
-					const calls = model.create.getCalls();
-					chai.expect(calls.length).to.equal(1);
-					chai.expect(calls[0].args).to.deep.equal([{}]);
+					current.save().then(() => {
+						const calls = model.create.getCalls();
+						chai.expect(calls.length).to.equal(1);
+						chai.expect(calls[0].args).to.deep.equal([{}]);
+					});
 				});
 			});
 

@@ -24,7 +24,7 @@ export const registeredClasses: registeredClassMap =
  * This registers the class with the API ORM system
  */
 export function register(moduleId: string, apiHidden: boolean = false) {
-	return (target: new (...args: any[]) => IDataConnection<IDataContract>): any => {
+	return (target: new (...args: any[]) => IDataConnection<IDataContract> | IDataContract): any => {
 		const idx = moduleId + '.' + (<any> target).name;
 		registeredClasses[idx] = target;
 		Reflect.defineMetadata('ORM:registeredIndex', idx, target);

@@ -8,9 +8,202 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
-import { logger } from './connect';
+import { logger, connection } from './connect';
+import {OneToOne} from './relationships/OneToOne';
+
+export interface IDataContractConstruct<T extends DataContract> {
+	new (
+		instance: any
+	): T;
+	getContractName(): string;
+	getSequelizeModel(relationships?: boolean): Promise<sequelize.Model<any, any>>;
+	isFirst(dest: IDataContractConstruct<any>): boolean;
+}
+
+type DataContractType = typeof DataContract;
+
+export enum getFieldsSources {
+	save,
+	toJSON
+}
 
 export abstract class DataContract implements IDataContract {
+	public static moduleName: string;
+	public static name: string;
+	public static relationshipsSetup: boolean = false;
+	public static relationshipsSetupList: any[] = [];
+
+	public static getContractName(): string {
+		return this.moduleName + this.name;
+	}
+
+	public static getSequelizeModel(): Promise<sequelize.Model<any, any>> {
+		if (DataContract.models[this.moduleName] === undefined) {
+			DataContract.models[this.moduleName] = {};
+		}
+		if (DataContract.models[this.moduleName][this.name] === undefined) {
+			DataContract.models[this.moduleName][this.name] = this
+				.getBaseModel()
+				.then(this.setupRelationships.bind(this))
+				.then((model: sequelize.Model<any, any>) => {
+					if (DataContract.needsSync.indexOf(model) === -1) {
+						DataContract.needsSync.push(model);
+					}
+					return model;
+				});
+		}
+		return DataContract.models[this.moduleName][this.name]
+			.then((contract) => DataContract.syncAll()
+				.then(() => contract)
+			);
+	}
+
+	public static isFirst(dest: IDataContractConstruct<any>) {
+		return this.getContractName().localeCompare(dest.getContractName()) > 0;
+	}
+
+	private static models: {
+		[moduleName: string]: {
+			[contractName: string]: Promise<sequelize.Model<any, any>>;
+		}
+	} = {};
+
+	private static needsSync: sequelize.Model<any, any>[] = [];
+
+	private static getBaseModel(): Promise<sequelize.Model<any, any>> {
+		return new Promise((resolve, reject) => {
+			try {
+				const constructor: any = this;
+				const instance: DataContract = (new constructor(null, null));
+				const fields = instance.fields;
+				const model: any = {};
+				_.forEach(fields, (fieldName) => {
+					const type: Types = Reflect.getMetadata(
+						"ORM:type",
+						instance,
+						fieldName
+					);
+
+					switch (type) {
+						case Types.string:
+							model[fieldName] = {
+								type: sequelize.STRING
+							};
+							break;
+						case Types.float:
+							model[fieldName] = {
+								type: sequelize.FLOAT
+							};
+							break;
+						case Types.integer:
+							model[fieldName] = {
+								type: sequelize.INTEGER
+							};
+							break;
+						case Types.bigInt:
+							model[fieldName] = {
+								type: sequelize.BIGINT
+							};
+							break;
+						case Types.dateTimeTz:
+							model[fieldName] = {
+								type: sequelize.DATE
+							};
+							break;
+						case Types.relationshipOneToOne:
+							break;
+						default:
+							throw new TypeError(
+								'Field of unknown type found! ' +
+								'Field Name:' + fieldName + ' ' +
+								'Field Type: ' + type
+							);
+					}
+				});
+				const contract = connection.define(
+					this.getContractName(),
+					model,
+					{
+						freezeTableName: true // Model tableName will be the same as the model name
+					}
+				);
+				resolve(contract);
+			} catch (e) {
+				reject(e);
+			}
+		});
+	}
+
+	private static setupRelationships(thisModel): Promise<sequelize.Model<any, any>> {
+		const constructor: any = this;
+		const instance: DataContract = (new constructor(null, null));
+		const fields = instance.fields;
+		const relationships: Promise<any>[] = [];
+
+		this.relationshipsSetup = true;
+
+		try {
+
+			_.forEach(fields, (fieldName) => {
+				const type: Types = Reflect.getMetadata(
+					'ORM:type',
+					instance,
+					fieldName
+				);
+				const relatedTypeFn: () => IDataContractConstruct<any> =
+					Reflect.getMetadata(
+						'ORM:relatedType',
+						instance,
+						fieldName
+					);
+				// This can get called before everything is setup properly so we need to skip those that haven't fully
+				// loaded yet
+				if (relatedTypeFn && this.relationshipsSetupList.indexOf(relatedTypeFn) === -1) {
+					this.relationshipsSetupList.push(relatedTypeFn);
+
+					const relatedType: IDataContractConstruct<any> = relatedTypeFn();
+
+					relationships.push((<any> relatedType).getBaseModel().then((relatedModel) => {
+
+						// tslint:disable-next-line:switch-default
+						switch (type) {
+							case Types.relationshipOneToOne:
+								OneToOne.addRelationship(
+									<any> this,
+									thisModel,
+									relatedType,
+									relatedModel
+								);
+								break;
+						}
+
+						if (DataContract.needsSync.indexOf(relatedModel) === -1) {
+							DataContract.needsSync.push(relatedModel);
+						}
+					}));
+				} else {
+					this.relationshipsSetup = false;
+				}
+			});
+
+			return Promise.all(relationships).then(() => thisModel);
+		} catch (e) {
+			/* istanbul ignore next */
+			return <any> Promise.reject(e);
+		}
+	}
+
+	private static syncAll(): Promise<void> {
+		const syncList = DataContract.needsSync;
+		DataContract.needsSync = [];
+		const syncs: Promise<any>[] = [];
+		// tslint:disable-next-line:forin
+		for (const i in syncList) {
+			syncs.push(syncList[i].sync());
+		}
+		return Promise.all(syncs).then(() => { /* */ });
+	}
+
 	private get fields(): string[] {
 		return Reflect.getMetadata('ORM:fields', this);
 	}
@@ -23,8 +216,7 @@ export abstract class DataContract implements IDataContract {
 	public updatedAt: moment.Moment;
 
 	constructor(
-		private instance: any,
-		private model: sequelize.Model<any, any>
+		private instance: any
 	) {}
 
 	public loadData(data: any): void {
@@ -62,13 +254,29 @@ export abstract class DataContract implements IDataContract {
 	}
 
 	public save(): Promise<this> {
+		return this.internalSave(true);
+	}
+
+	public internalSave(saveRelated: boolean): Promise<this> {
 		if (this.instance) {
-			return this.instance.save().then(() => this);
+			let ret = this.instance.save();
+			if (saveRelated) {
+				ret = ret.then(this.saveRelated.bind(this));
+			}
+			return ret.then(() => this);
 		} else {
-			return this.model.create(this.getFields()).then((sqlData: any) => {
-				this.instance = sqlData;
-				return this;
-			});
+			let ret = (<DataContractType> this.constructor).getSequelizeModel();
+			if (saveRelated) {
+				ret = ret.then(this.saveRelated.bind(this));
+			}
+			return ret
+				.then((model: sequelize.Model<any, any>) => {
+					return model.create(this.getFields(getFieldsSources.save));
+				})
+				.then((sqlData: any) => {
+					this.instance = sqlData;
+					return this;
+				});
 		}
 	}
 
@@ -81,15 +289,15 @@ export abstract class DataContract implements IDataContract {
 	}
 
 	private toJSON(): any {
-		const returnObj: any = this.getFields();
+		const returnObj: any = this.getFields(getFieldsSources.toJSON);
 		returnObj.id = this.id;
 		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
 		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
 		return returnObj;
 	}
 
-	private getFields(): any {
-		const returnObj: any = {};
+	private getFields(reqSrc: getFieldsSources): any {
+		let returnObj: any = {};
 		const fields: string[] = this.fields;
 		_.forEach(fields, (fieldName: string) => {
 			const value: any = this[fieldName];
@@ -102,11 +310,35 @@ export abstract class DataContract implements IDataContract {
 					case(Types.dateTimeTz):
 						returnObj[fieldName] = value && value.toISOString();
 						break;
+					case(Types.relationshipOneToOne):
+						if (value) {
+							returnObj = (<OneToOne<any>> value).setField(returnObj, reqSrc);
+						}
+						break;
 					default:
 						returnObj[fieldName] = value;
 				}
 			}
 		});
 		return returnObj;
+	}
+
+	private saveRelated<T>(model: T): Promise<T> {
+		const promises: Promise<any>[] = [];
+
+		const fields: string[] = this.fields;
+		_.forEach(fields, (fieldName: string) => {
+			const type: Types = Reflect.getMetadata('ORM:type', this, fieldName);
+			const value: any = this[fieldName];
+
+			// tslint:disable-next-line:switch-default
+			switch (type) {
+				case(Types.relationshipOneToOne):
+					promises.push((<OneToOne<any>> value).save());
+					break;
+			}
+		});
+
+		return Promise.all(promises).then(() => model);
 	}
 }
