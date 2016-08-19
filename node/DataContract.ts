@@ -9,7 +9,9 @@ import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
 import { logger, connection } from './connect';
-import {OneToOne} from './relationships/OneToOne';
+import { OneToOne } from './relationships/OneToOne';
+import { ManyToOne } from "./relationships/ManyToOne";
+import { Relationship } from "./relationships/Relationship";
 
 export interface IDataContractConstruct<T extends DataContract> {
 	new (
@@ -175,6 +177,12 @@ export abstract class DataContract implements IDataContract {
 									relatedModel
 								);
 								break;
+							case Types.relationshipManyToOne:
+								ManyToOne.addRelationship(
+									thisModel,
+									relatedModel
+								);
+								break;
 						}
 
 						if (DataContract.needsSync.indexOf(relatedModel) === -1) {
@@ -257,34 +265,37 @@ export abstract class DataContract implements IDataContract {
 		return this.internalSave(true);
 	}
 
-	public internalSave(saveRelated: boolean): Promise<this> {
-		if (this.instance) {
-			let ret = this.instance.save();
-			if (saveRelated) {
-				ret = ret.then(this.saveRelated.bind(this));
-			}
-			return ret.then(() => this);
-		} else {
-			let ret = (<DataContractType> this.constructor).getSequelizeModel();
-			if (saveRelated) {
-				ret = ret.then(this.saveRelated.bind(this));
-			}
-			return ret
-				.then((model: sequelize.Model<any, any>) => {
-					return model.create(this.getFields(getFieldsSources.save));
-				})
-				.then((sqlData: any) => {
-					this.instance = sqlData;
-					return this;
-				});
-		}
-	}
-
 	public delete(): Promise<void> {
 		if (this.instance) {
 			return this.instance.destroy();
 		} else {
 			return <any> Promise.resolve();
+		}
+	}
+
+	private internalSave(saveRelated: boolean): Promise<this> {
+		if (this.instance) {
+			let ret: Promise<any>;
+			ret = this.seedIds().then(() => this.instance.save());
+			if (saveRelated) {
+				ret = ret.then(() => this.saveDependants());
+			} else {
+				ret = this.instance.save();
+			}
+			return ret.then(() => this);
+		} else {
+			let ret: Promise<any> = this.seedIds()
+				.then(() => (<DataContractType> this.constructor).getSequelizeModel())
+				.then((model: sequelize.Model<any, any>) => {
+					return model.create(this.getFields(getFieldsSources.save));
+				})
+				.then((sqlData: any) => {
+					this.instance = sqlData;
+				});
+			if (saveRelated) {
+				return ret.then(() => this.saveDependants());
+			}
+			return ret.then(() => this);
 		}
 	}
 
@@ -315,6 +326,11 @@ export abstract class DataContract implements IDataContract {
 							returnObj = (<OneToOne<any>> value).setField(returnObj, reqSrc);
 						}
 						break;
+					case(Types.relationshipManyToOne):
+						if (value) {
+							returnObj = (<ManyToOne<any>> value).setField(returnObj, reqSrc);
+						}
+						break;
 					default:
 						returnObj[fieldName] = value;
 				}
@@ -323,7 +339,7 @@ export abstract class DataContract implements IDataContract {
 		return returnObj;
 	}
 
-	private saveRelated<T>(model: T): Promise<T> {
+	private seedIds(): Promise<any> {
 		const promises: Promise<any>[] = [];
 
 		const fields: string[] = this.fields;
@@ -334,11 +350,32 @@ export abstract class DataContract implements IDataContract {
 			// tslint:disable-next-line:switch-default
 			switch (type) {
 				case(Types.relationshipOneToOne):
-					promises.push((<OneToOne<any>> value).save());
+				case(Types.relationshipManyToOne):
+					promises.push((<Relationship<any, any>> value).seedIds());
 					break;
 			}
 		});
 
-		return Promise.all(promises).then(() => model);
+		return Promise.all(promises);
+	}
+
+	private saveDependants(): Promise<any> {
+		const promises: Promise<any>[] = [];
+
+		const fields: string[] = this.fields;
+		_.forEach(fields, (fieldName: string) => {
+			const type: Types = Reflect.getMetadata('ORM:type', this, fieldName);
+			const value: any = this[fieldName];
+
+			// tslint:disable-next-line:switch-default
+			switch (type) {
+				case(Types.relationshipOneToOne):
+				case(Types.relationshipManyToOne):
+					promises.push((<Relationship<any, any>> value).saveRelated());
+					break;
+			}
+		});
+
+		return Promise.all(promises);
 	}
 }

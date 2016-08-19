@@ -254,7 +254,10 @@ describe('node/http', function() {
 			delete object.save;
 			const response = http.HTTP.handle(putRequest, responseData);
 			return Promise.all([
-				chai.expect(response).to.eventually.be.rejected
+				response.then(() => {
+					chai.expect(responseData.statusCode).to.equal(412);
+				}),
+				chai.expect(response).to.eventually.equal('"Save Failed"')
 			]);
 		});
 	});

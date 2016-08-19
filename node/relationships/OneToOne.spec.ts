@@ -189,13 +189,11 @@ describe('node/relationships/OneToOne', function() {
 					a.save(),
 					b2.save()
 				]))
-				.then(
-				() => {
+				.then(() => {
 					const args = mockConnect.model.create.args;
 					chai.expect(args).to.deep.equal([]);
-					chai.expect(instance.save.args.length).to.equal(10);
-				}
-			);
+					chai.expect(instance.save.args.length).to.equal(8);
+				});
 		});
 
 		it('Does add to a create when set', function () {
@@ -334,16 +332,17 @@ describe('node/relationships/OneToOne', function() {
 			(<any> mockConnect.model).name = 'OneToOneB';
 
 			const b: classTypes.OneToOneB = new classes.OneToOneB();
-			b.a.set(new classes.OneToOneA());
-			return b.save().then(() => {
-				const args = mockConnect.model.create.args;
-				chai.expect(args).to.deep.equal([
-					[ {} ],
-					[ {
-						OneToOneBId: 0
-					} ]
-				]);
-			});
+			return b.a.set(new classes.OneToOneA())
+				.then(() => b.save())
+				.then(() => {
+					const args = mockConnect.model.create.args;
+					chai.expect(args).to.deep.equal([
+						[ {} ],
+						[ {
+							OneToOneBId: 0
+						} ]
+					]);
+				});
 		});
 
 		it('Does add to a create when set (null)', function () {
