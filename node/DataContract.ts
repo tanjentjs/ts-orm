@@ -254,14 +254,22 @@ export abstract class DataContract implements IDataContract {
 	}
 
 	public save(): Promise<this> {
+		return this.internalSave(true);
+	}
+
+	public internalSave(saveRelated: boolean): Promise<this> {
 		if (this.instance) {
-			return this.instance.save()
-				.then(this.saveRelated.bind(this))
-				.then(() => this);
+			let ret = this.instance.save();
+			if (saveRelated) {
+				ret = ret.then(this.saveRelated.bind(this));
+			}
+			return ret.then(() => this);
 		} else {
-			return (<DataContractType> this.constructor)
-				.getSequelizeModel()
-				.then(this.saveRelated.bind(this))
+			let ret = (<DataContractType> this.constructor).getSequelizeModel();
+			if (saveRelated) {
+				ret = ret.then(this.saveRelated.bind(this));
+			}
+			return ret
 				.then((model: sequelize.Model<any, any>) => {
 					return model.create(this.getFields(getFieldsSources.save));
 				})

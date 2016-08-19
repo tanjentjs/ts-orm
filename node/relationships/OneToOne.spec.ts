@@ -45,8 +45,8 @@ describe('node/relationships/OneToOne', function() {
 		mockConnect.reset(connect);
 		instance = {
 			get: sinon.stub(),
-			set: sinon.stub(),
-			save: sinon.stub()
+			save: sinon.stub().returns(Promise.resolve()),
+			set: sinon.stub()
 		};
 	});
 
@@ -69,201 +69,320 @@ describe('node/relationships/OneToOne', function() {
 		});
 	});
 
-	it('Returns null on the A side when there is no data', function () {
-		const a: classTypes.OneToOneA = new classes.OneToOneA();
-		const fetch = a.b.fetch();
-		return chai.expect(fetch).to.eventually.equal(null);
-	});
-	it('Returns null on the B side when there is no data', function () {
-		const b: classTypes.OneToOneB = new classes.OneToOneB();
-		const fetch = b.a.fetch();
-		return chai.expect(fetch).to.eventually.equal(null);
-	});
+	describe('A Side', function () {
+		it('Returns null when there is no data', function () {
+			const a: classTypes.OneToOneA = new classes.OneToOneA();
+			const fetch = a.b.fetch();
+			return chai.expect(fetch).to.eventually.equal(null);
+		});
 
-	it('Returns the object on the A side when there is data', function () {
-		instance.get.withArgs('id').returns(0);
-		mockConnect.model.findOne.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Returns the object when there is data', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.findOne.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const a: classTypes.OneToOneA = new classes.OneToOneA(instance);
-		const fetch = a.b.fetch();
+			const a: classTypes.OneToOneA = new classes.OneToOneA(instance);
+			const fetch = a.b.fetch();
 
-		return Promise.all([
-			chai.expect(fetch).to.eventually.not.equal(null),
-			fetch.then((result) => {
-				chai.expect(result).to.be.an.instanceof(classes.OneToOneB);
+			return Promise.all([
+				chai.expect(fetch).to.eventually.not.equal(null),
+				fetch.then((result) => {
+					chai.expect(result).to.be.an.instanceof(classes.OneToOneB);
 
-				const args = mockConnect.model.findOne.args;
-				chai.expect(args).to.deep.equal([
-					[
-						{
-							'where': {
-								'OneToOneBId': 0
+					const args = mockConnect.model.findOne.args;
+					chai.expect(args).to.deep.equal([
+						[
+							{
+								'where': {
+									'OneToOneBId': 0
+								}
 							}
-						}
-					]
-				]);
-			})
-		]);
-	});
+						]
+					]);
+				})
+			]);
+		});
 
-	it('Returns the object on the B side when there is data', function () {
-		instance.get.withArgs('OneToOneBId').returns(0);
-		mockConnect.model.findOne.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Sets with new objects', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
-		const fetch = b.a.fetch();
-
-		return Promise.all([
-			chai.expect(fetch).to.eventually.not.equal(null),
-			fetch.then((result) => {
-				chai.expect(result).to.be.an.instanceof(classes.OneToOneA);
-
-				const args = mockConnect.model.findById.args;
-				chai.expect(args).to.deep.equal([
-					[0]
-				]);
-			})
-		]);
-	});
-
-	it('Works on multiple requests', function () {
-		instance.get.withArgs('OneToOneBId').returns(0);
-		mockConnect.model.findOne.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
-
-		const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
-		const fetch = b.a.fetch();
-
-		return Promise.all([
-			chai.expect(fetch).to.eventually.not.equal(null),
-			fetch.then((result) => {
-				chai.expect(result).to.be.an.instanceof(classes.OneToOneA);
-
-				const args = mockConnect.model.findById.args;
-				chai.expect(args).to.deep.equal([
-					[0]
-				]);
-
-				const fetch2 = b.a.fetch();
-
-				return Promise.all([
-					chai.expect(fetch2).to.eventually.not.equal(null),
-					fetch2.then((result2) => {
-						chai.expect(result2).to.be.an.instanceof(classes.OneToOneA);
-
-						const args2 = mockConnect.model.findById.args;
-						chai.expect(args2).to.deep.equal(
+			const a: classTypes.OneToOneA = new classes.OneToOneA();
+			a.b.set(new classes.OneToOneB()).then(() => {
+				return a.save().then(
+					() => {
+						const args = mockConnect.model.create.args;
+						chai.expect(args).to.deep.equal(
 							[
-								[0]
+								[{
+									OneToOneBId: 0
+								}]
 							]
 						);
-					})
+					}
+				);
+			});
+		});
+
+		it('Sets with new a object', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const a: classTypes.OneToOneA = new classes.OneToOneA();
+			a.b.set(new classes.OneToOneB(instance)).then(() => {
+				return a.save().then(
+					() => {
+						const args = mockConnect.model.create.args;
+						chai.expect(args).to.deep.equal(
+							[
+								[{
+									OneToOneBId: 0
+								}]
+							]
+						);
+					}
+				);
+			});
+		});
+
+		it('Sets with existing objects', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const a: classTypes.OneToOneA = new classes.OneToOneA(instance);
+			a.b.set(new classes.OneToOneB(instance)).then(() => {
+				return a.save().then(
+					() => {
+						const args = mockConnect.model.create.args;
+						chai.expect(args).to.deep.equal(
+							[
+								[{
+									OneToOneBId: 0
+								}]
+							]
+						);
+					}
+				);
+			});
+		});
+
+		it('Updates old objects', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			instance.get.withArgs('OneToOneBId').returns(0);
+			mockConnect.model.findOne.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const a: classTypes.OneToOneA = new classes.OneToOneA(instance);
+			const b1: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			const b2: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			return a.b.set(b1)
+				.then(() => Promise.all([
+					a.save(),
+					b1.save()
+				]))
+				.then(() => a.b.set(b2))
+				.then(() => Promise.all([
+					a.save(),
+					b2.save()
+				]))
+				.then(
+				() => {
+					const args = mockConnect.model.create.args;
+					chai.expect(args).to.deep.equal([]);
+					chai.expect(instance.save.args.length).to.equal(10);
+				}
+			);
+		});
+
+		it('Does add to a create when set', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const a: classTypes.OneToOneA = new classes.OneToOneA(instance);
+			return a.b.set(new classes.OneToOneB()).then(() => {
+				return a.save().then(() => {
+					const args = mockConnect.model.create.args;
+					chai.expect(args).to.deep.equal([
+						[ {
+							OneToOneBId: 0
+						} ]
+					]);
+				});
+			});
+		});
+	});
+
+	describe('B Side', function () {
+		it('Returns null when there is no data', function () {
+			const b: classTypes.OneToOneB = new classes.OneToOneB();
+			const fetch = b.a.fetch();
+			return chai.expect(fetch).to.eventually.equal(null);
+		});
+
+		it('Returns the object when there is data', function () {
+			instance.get.withArgs('OneToOneBId').returns(0);
+			mockConnect.model.findOne.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			const fetch = b.a.fetch();
+
+			return Promise.all([
+				chai.expect(fetch).to.eventually.not.equal(null),
+				fetch.then((result) => {
+					chai.expect(result).to.be.an.instanceof(classes.OneToOneA);
+
+					const args = mockConnect.model.findById.args;
+					chai.expect(args).to.deep.equal([
+						[0]
+					]);
+				})
+			]);
+		});
+
+		it('Works on multiple requests', function () {
+			instance.get.withArgs('OneToOneBId').returns(0);
+			mockConnect.model.findOne.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			const fetch = b.a.fetch();
+
+			return Promise.all([
+				chai.expect(fetch).to.eventually.not.equal(null),
+				fetch.then((result) => {
+					chai.expect(result).to.be.an.instanceof(classes.OneToOneA);
+
+					const args = mockConnect.model.findById.args;
+					chai.expect(args).to.deep.equal([
+						[0]
+					]);
+
+					const fetch2 = b.a.fetch();
+
+					return Promise.all([
+						chai.expect(fetch2).to.eventually.not.equal(null),
+						fetch2.then((result2) => {
+							chai.expect(result2).to.be.an.instanceof(classes.OneToOneA);
+
+							const args2 = mockConnect.model.findById.args;
+							chai.expect(args2).to.deep.equal(
+								[
+									[0]
+								]
+							);
+						})
+					]);
+				})
+			]);
+		});
+
+		it('Is not included in the json', function () {
+			instance.get.withArgs('OneToOneBId').returns(0);
+			mockConnect.model.findOne.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
+
+			const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			return b.a.fetch().then(() => {
+				const obj = JSON.parse(b.serialize());
+				chai.expect(Object.getOwnPropertyNames(obj)).to.deep.equal([
+					'createdAt',
+					'updatedAt'
 				]);
-			})
-		]);
-	});
-
-	it('Is not included in the json', function () {
-		instance.get.withArgs('OneToOneBId').returns(0);
-		mockConnect.model.findOne.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
-
-		const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
-		return b.a.fetch().then(() => {
-			const obj = JSON.parse(b.serialize());
-			chai.expect(Object.getOwnPropertyNames(obj)).to.deep.equal([
-				'createdAt',
-				'updatedAt'
-			]);
+			});
 		});
-	});
 
-	it('Does not add to a create when not set', function () {
-		instance.get.withArgs('OneToOneBId').returns(0);
-		mockConnect.model.create.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Does not add to a create when not set', function () {
+			instance.get.withArgs('OneToOneBId').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB();
-		return b.save().then(() => {
-			const args = mockConnect.model.create.args;
-			chai.expect(args).to.deep.equal([
-				[ {} ]
-			]);
+			const b: classTypes.OneToOneB = new classes.OneToOneB();
+			return b.save().then(() => {
+				const args = mockConnect.model.create.args;
+				chai.expect(args).to.deep.equal([
+					[ {} ]
+				]);
+			});
 		});
-	});
 
-	it('Does add to a create when set (existing)', function () {
-		instance.get.withArgs('id').returns(0);
-		mockConnect.model.create.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Does add to a create when set (existing)', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB();
-		b.a.set(new classes.OneToOneA(instance));
-		return b.save().then(() => {
-			const args = mockConnect.model.create.args;
-			chai.expect(args).to.deep.equal([
-				[ {
-					OneToOneBId: 0
-				} ]
-			]);
+			const b: classTypes.OneToOneB = new classes.OneToOneB();
+			b.a.set(new classes.OneToOneA(instance));
+			return b.save().then(() => {
+				const args = mockConnect.model.create.args;
+				chai.expect(args).to.deep.equal([
+					[ {
+						OneToOneBId: 0
+					} ]
+				]);
+			});
 		});
-	});
 
-	it('Does add to a create when set (new)', function () {
-		instance.get.withArgs('id').returns(0);
-		mockConnect.model.create.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Does add to a create when set (new)', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB();
-		b.a.set(new classes.OneToOneA());
-		return b.save().then(() => {
-			const args = mockConnect.model.create.args;
-			chai.expect(args).to.deep.equal([
-				[ {} ],
-				[ {
-					OneToOneBId: 0
-				} ]
-			]);
+			const b: classTypes.OneToOneB = new classes.OneToOneB();
+			b.a.set(new classes.OneToOneA());
+			return b.save().then(() => {
+				const args = mockConnect.model.create.args;
+				chai.expect(args).to.deep.equal([
+					[ {} ],
+					[ {
+						OneToOneBId: 0
+					} ]
+				]);
+			});
 		});
-	});
 
-	it('Does add to a create when set (null)', function () {
-		instance.get.withArgs('id').returns(0);
-		mockConnect.model.create.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Does add to a create when set (null)', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB();
-		b.a.set(null);
-		return b.save().then(() => {
-			const args = mockConnect.model.create.args;
-			chai.expect(args).to.deep.equal([
-				[ {
-					OneToOneBId: null
-				} ]
-			]);
+			const b: classTypes.OneToOneB = new classes.OneToOneB();
+			b.a.set(null);
+			return b.save().then(() => {
+				const args = mockConnect.model.create.args;
+				chai.expect(args).to.deep.equal([
+					[ {
+						OneToOneBId: null
+					} ]
+				]);
+			});
 		});
-	});
 
-	it('Sets the base model when set', function () {
-		instance.get.withArgs('id').returns(0);
-		mockConnect.model.create.returns(Promise.resolve(instance));
-		instance.save.returns(Promise.resolve(instance));
-		(<any> mockConnect.model).name = 'OneToOneB';
+		it('Sets the base model when set', function () {
+			instance.get.withArgs('id').returns(0);
+			mockConnect.model.create.returns(Promise.resolve(instance));
+			instance.save.returns(Promise.resolve(instance));
+			(<any> mockConnect.model).name = 'OneToOneB';
 
-		const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
-		const setPromise = b.a.set(new classes.OneToOneA(instance));
-		return setPromise.then(() => {
-			const args = instance.set.args;
-			chai.expect(args).to.deep.equal([
-				[ 'OneToOneBId', 0 ]
-			]);
+			const b: classTypes.OneToOneB = new classes.OneToOneB(instance);
+			const setPromise = b.a.set(new classes.OneToOneA(instance));
+			return setPromise.then(() => {
+				const args = instance.set.args;
+				chai.expect(args).to.deep.equal([
+					[ 'OneToOneBId', 0 ]
+				]);
+			});
 		});
-	});
 
-	after(function() {
-		mockery.deregisterAll();
-		mockery.disable();
+		after(function() {
+			mockery.deregisterAll();
+			mockery.disable();
+		});
+
 	});
 });

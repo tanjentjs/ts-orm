@@ -66,14 +66,16 @@ export class OneToOne<T extends DataContract> {
 		}
 	}
 
+	private connectedName: string = null;
 	private currentValue: T = null;
-	/** This will only be set after a new value is set to this object and isFirst returns true */
+	/** Note: This will only be set after a new value is set to this object and isFirst returns true */
 	private idName: string = null;
 	private changedModels: DataContract[] = [];
 
-	public constructor(private parent: DataContract,
-	                   private target: () => IDataContractConstruct<T>) {
-	}
+	public constructor(
+		private parent: DataContract,
+		private target: () => IDataContractConstruct<T>
+	) { }
 
 	public fetch(): Promise<T> {
 		if (this.currentValue) {
@@ -86,7 +88,58 @@ export class OneToOne<T extends DataContract> {
 	}
 
 	public set(newModel: T): Promise<void> {
-		// TODO: set the other side's relationship object
+		return this.internalSet(newModel, true);
+	}
+
+	public save(): Promise<void> {
+		const savePromises: Promise<any>[] = [];
+
+		if ((<IDataContractConstruct<any>> this.parent.constructor).isFirst(this.target())) {
+			// tslint:disable-next-line:forin
+			for (const i in this.changedModels) {
+				savePromises.push(this.changedModels[i].internalSave(false));
+			}
+		} else {
+			// tslint:disable-next-line:forin
+			for (const i in this.changedModels) {
+				savePromises.push(this.changedModels[i].save());
+			}
+		}
+
+		return Promise.all(savePromises).then(
+			() => { /* */ }
+		);
+	}
+
+	public setField(returnObj, reqSrc: getFieldsSources): any {
+		if (reqSrc === getFieldsSources.save && this.idName) {
+			if (this.currentValue) {
+				returnObj[this.idName] = this.currentValue.id;
+			} else {
+				returnObj[this.idName] = null;
+			}
+		}
+		return returnObj;
+	}
+
+	private getConnectedName(): string {
+		if (!this.connectedName) {
+			const proto = this.target().prototype;
+			for (const field in proto) {
+				if (
+					proto.hasOwnProperty(field) &&
+					Reflect.hasOwnMetadata('ORM:relatedType', proto, field) &&
+					Reflect.getOwnMetadata('ORM:relatedType', proto, field)() === this.parent.constructor
+				) {
+					this.connectedName = field;
+					return field;
+				}
+			}
+		}
+		return this.connectedName;
+	}
+
+	private internalSet(newModel: T, updateRelated: boolean): Promise<void> {
 
 		if ((<IDataContractConstruct<any>> this.parent.constructor).isFirst(this.target())) {
 			return this.target().getSequelizeModel().then(
@@ -104,13 +157,14 @@ export class OneToOne<T extends DataContract> {
 							// Mark it as changed so we can get the ID later
 							this.changedModels.push(newModel);
 						}
+						return (<OneToOne<DataContract>> newModel[this.getConnectedName()]).internalSet(this.parent, false);
 					} catch (e) {
 						/* istanbul ignore next */
 						return Promise.reject(e);
 					}
 				}
 			);
-		} else {
+		} else if (updateRelated) {
 			return Promise.all(
 				[
 					(<any> this.parent.constructor).getSequelizeModel(),
@@ -119,51 +173,39 @@ export class OneToOne<T extends DataContract> {
 			).then(
 				(items) => {
 					try {
+						const promises: Promise<any>[] = [];
 						const fromModel: sequelize.Model<any, any> = items[0];
 						const oldModel: T = items[1];
 
 						const idName: string = (<any> fromModel).name + 'Id';
 
 						if (oldModel) {
+							promises.push(
+								(<OneToOne<DataContract>> oldModel[this.getConnectedName()])
+									.internalSet(this.parent, false)
+							);
 							(<any> oldModel).instance.set(idName, null);
 							this.changedModels.push(oldModel);
 						}
 
 						if (newModel) {
-							(<any> newModel).instance.set(idName, this.parent.id);
+							promises.push(
+								(<OneToOne<DataContract>> newModel[this.getConnectedName()])
+									.internalSet(this.parent, false)
+							);
 							this.changedModels.push(newModel);
 							this.currentValue = newModel;
 						}
+						return Promise.all(promises).then(() => { /* */ });
 					} catch (e) {
 						/* istanbul ignore next */
 						return Promise.reject(e);
 					}
 				}
 			);
+		} else {
+			this.currentValue = newModel;
+			return Promise.resolve();
 		}
-	}
-
-	public save(): Promise<void> {
-		const savePromises: Promise<any>[] = [];
-
-		// tslint:disable-next-line:forin
-		for (const i in this.changedModels) {
-			savePromises.push(this.changedModels[i].save());
-		}
-
-		return Promise.all(savePromises).then(
-			() => { /* */ }
-		);
-	}
-
-	public setField(returnObj, reqSrc: getFieldsSources): any {
-		if (reqSrc === getFieldsSources.save && this.idName) {
-			if (this.currentValue) {
-				returnObj[this.idName] = this.currentValue.id;
-			} else {
-				returnObj[this.idName] = null;
-			}
-		}
-		return returnObj;
 	}
 }
