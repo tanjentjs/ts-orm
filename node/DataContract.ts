@@ -331,6 +331,9 @@ export abstract class DataContract implements IDataContract {
 							returnObj = (<ManyToOne<any>> value).setField(returnObj, reqSrc);
 						}
 						break;
+					case(Types.relationshipOneToMany):
+						// Data is not stored in this object so do nothing
+						break;
 					default:
 						returnObj[fieldName] = value;
 				}

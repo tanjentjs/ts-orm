@@ -2,6 +2,7 @@ import * as sequelize from 'sequelize';
 
 import {DataContract, IDataContractConstruct, getFieldsSources} from '../DataContract';
 import {Relationship} from "./Relationship";
+import {OneToMany} from "./OneToMany";
 
 export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 	public static fetch<U extends DataContract>(
@@ -68,7 +69,16 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 					}
 
 					if (updateRelated) {
-						// TODO
+						const newRel: any = newModel[this.getConnectedName()];
+						const oldRel: any = this.currentValue[this.getConnectedName()];
+						const newIdx: number = newRel.currentValue.indexOf(this.parent);
+						const oldIdx: number = oldRel.currentValue.indexOf(this.parent);
+						if (newIdx === -1) {
+							newRel.currentValue.push(this.parent);
+						}
+						if (oldIdx !== -1) {
+							delete oldRel.currentValue[oldIdx];
+						}
 					}
 				} catch (e) {
 					/* istanbul ignore next */

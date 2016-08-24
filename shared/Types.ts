@@ -5,5 +5,6 @@ export enum Types {
 	float,
 	dateTimeTz,
 	relationshipOneToOne,
-	relationshipManyToOne
+	relationshipManyToOne,
+	relationshipOneToMany
 }
