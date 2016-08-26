@@ -1,7 +1,8 @@
 import * as sequelize from 'sequelize';
 
-import {DataContract, IDataContractConstruct, getFieldsSources} from '../DataContract';
+import {DataContract, IDataContractConstruct} from '../DataContract';
 import {Relationship} from "./Relationship";
+import {ManyToOne} from "./ManyToOne";
 
 export class OneToMany<T extends DataContract> extends Relationship<T, T[]> {
 	public static fetch<U extends DataContract>(
@@ -9,7 +10,7 @@ export class OneToMany<T extends DataContract> extends Relationship<T, T[]> {
 		target: IDataContractConstruct<U>
 	): Promise<U[]> {
 		return target.getSequelizeModel()
-			.then((targetModel: sequelize.Model<any, any>): U[] | Promise<U[]> => {
+			.then((targetModel: sequelize.Model<any, any>): U[] | Promise<U[] | void> => {
 				try {
 					const idName: string = (<any> targetModel).name + 'Id';
 					const where: any = {};
@@ -27,7 +28,7 @@ export class OneToMany<T extends DataContract> extends Relationship<T, T[]> {
 					);
 				} catch (e) {
 					/* istanbul ignore next */
-					return <any> Promise.reject(e);
+					return Promise.reject(e);
 				}
 			});
 	}
@@ -40,19 +41,30 @@ export class OneToMany<T extends DataContract> extends Relationship<T, T[]> {
 		srcModel.hasMany(srcModel);
 	}
 
-	/** Note: This will only be set after a new value is set to this object and isFirst returns true */
-	private idName: string = null;
-
 	protected internalSet(newModel: T[], updateRelated: boolean): Promise<any | void> {
 		if (updateRelated) {
 			return this.target().getSequelizeModel().then(
-				(targetModel: sequelize.Model<any, any>) => {
+				(targetModel: sequelize.Model<any, any>): Promise<any | void> => {
 					try {
-						// TODO
+						const promises: Promise<any>[] = [];
 
-						if (updateRelated) {
-							// TODO
+						// tslint:disable-next-line:forin
+						for (const i in this.currentValue) {
+							promises.push(
+								(<ManyToOne<DataContract>> this.currentValue[i][this.getConnectedName()])
+									.set(null)
+							);
 						}
+						// tslint:disable-next-line:forin
+						for (const i in newModel) {
+							promises.push(
+								this.currentValue[i][this.getConnectedName()].internalSet(this.parent, false).then(() => {
+									this.currentValue[i][this.getConnectedName()].currentValue = this.parent;
+								})
+							);
+						}
+
+						return Promise.all(promises);
 					} catch (e) {
 						/* istanbul ignore next */
 						return Promise.reject(e);

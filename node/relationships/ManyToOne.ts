@@ -2,7 +2,6 @@ import * as sequelize from 'sequelize';
 
 import {DataContract, IDataContractConstruct, getFieldsSources} from '../DataContract';
 import {Relationship} from "./Relationship";
-import {OneToMany} from "./OneToMany";
 
 export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 	public static fetch<U extends DataContract>(
