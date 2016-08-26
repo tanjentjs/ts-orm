@@ -37,7 +37,6 @@ describe('node/DataConnection', function() {
 			'./Relationship',
 			'moment',
 			'lodash',
-			'bunyan',
 			'os',
 			'fs',
 			'util',
