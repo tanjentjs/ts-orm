@@ -233,7 +233,7 @@ describe('node/http', function() {
 				response.then(() => {
 					chai.expect(responseData.statusCode).to.equal(412);
 				}),
-				chai.expect(response).to.eventually.equal('"Malformed JSON Details: Unexpected end of input"')
+				chai.expect(response).to.eventually.include('"Malformed JSON Details:')
 			]);
 		});
 
@@ -323,7 +323,7 @@ describe('node/http', function() {
 				response.then(() => {
 					chai.expect(responseData.statusCode).to.equal(412);
 				}),
-				chai.expect(response).to.eventually.equal('"Malformed JSON Details: Unexpected end of input"')
+				chai.expect(response).to.eventually.include('"Malformed JSON Details:')
 			]);
 		});
 

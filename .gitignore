@@ -7,5 +7,6 @@ typings/
 !/.config-sample/config.js
 .idea/workspace.xml
 .idea/dictionaries/
+.idea/deployment.xml
 npm-debug.log
 coverage/
