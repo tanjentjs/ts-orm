@@ -37,6 +37,7 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 	): void {
 		srcModel.belongsTo(destModel);
 		destModel.hasMany(srcModel);
+		console.log('attr', srcModel.rawAttributes);
 	}
 
 	/** Note: This will only be set after a new value is set to this object and isFirst returns true */
@@ -67,16 +68,22 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 						this.needsIds.push(newModel);
 					}
 
-					if (updateRelated) {
+					if (updateRelated && this.getConnectedName()) {
 						const newRel: any = newModel[this.getConnectedName()];
-						const oldRel: any = this.currentValue[this.getConnectedName()];
-						const newIdx: number = newRel.currentValue.indexOf(this.parent);
-						const oldIdx: number = oldRel.currentValue.indexOf(this.parent);
-						if (newIdx === -1) {
-							newRel.currentValue.push(this.parent);
-						}
-						if (oldIdx !== -1) {
-							delete oldRel.currentValue[oldIdx];
+						if (newRel.currentValue) {
+							const newIdx: number = newRel.currentValue.indexOf(this.parent);
+							if (newIdx === -1) {
+								newRel.currentValue.push(this.parent);
+							}
+
+							if (this.currentValue) {
+								const oldRel: any = this.currentValue[this.getConnectedName()];
+								const oldIdx: number = oldRel.currentValue.indexOf(this.parent);
+
+								if (oldIdx !== -1) {
+									delete oldRel.currentValue[oldIdx];
+								}
+							}
 						}
 					}
 				} catch (e) {

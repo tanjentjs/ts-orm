@@ -6,6 +6,8 @@ import {field as sharedField} from '../../shared/field';
 import {Types} from '../../shared/Types';
 import {OneToOne} from './OneToOne';
 import {DataContract, IDataContractConstruct} from '../DataContract';
+import {ManyToOne} from './ManyToOne';
+import {OneToMany} from './OneToMany';
 
 export function relatedField<T extends DataContract>(
 	RelatedType: () => IDataContractConstruct<T>,
@@ -19,6 +21,12 @@ export function relatedField<T extends DataContract>(
 		switch (JsType) {
 			case(OneToOne):
 				type = Types.relationshipOneToOne;
+				break;
+			case(ManyToOne):
+				type = Types.relationshipManyToOne;
+				break;
+			case(OneToMany):
+				type = Types.relationshipOneToMany;
 				break;
 			/* istanbul ignore next */
 			default:
