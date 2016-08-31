@@ -25,6 +25,7 @@ describe('node/DataContract', function() {
 			'./relationships',
 			'./OneToOne',
 			'./relationships/OneToOne',
+			'./relatedField',
 			'moment',
 			'lodash',
 			'debug'

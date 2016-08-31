@@ -37,7 +37,6 @@ export class ManyToOne<T extends DataContract> extends Relationship<T, T> {
 	): void {
 		srcModel.belongsTo(destModel);
 		destModel.hasMany(srcModel);
-		console.log('attr', srcModel.rawAttributes);
 	}
 
 	/** Note: This will only be set after a new value is set to this object and isFirst returns true */

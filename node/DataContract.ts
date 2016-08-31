@@ -204,11 +204,9 @@ export abstract class DataContract implements IDataContract {
 	}
 
 	private static syncAll(): Promise<void> {
-		console.log('Syncing');
 		const syncList = DataContract.needsSync;
 		DataContract.needsSync = [];
 		const syncs: Promise<any>[] = [];
-		console.log(syncList.length);
 		// tslint:disable-next-line:forin
 		for (const i in syncList) {
 			syncs.push(syncList[i].sync());

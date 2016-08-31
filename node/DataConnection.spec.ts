@@ -34,6 +34,7 @@ describe('node/DataConnection', function() {
 			'./OneToOne',
 			'./relationships/ManyToOne',
 			'./ManyToOne',
+			'./OneToMany',
 			'./Relationship',
 			'moment',
 			'lodash',
