@@ -1,9 +1,6 @@
 import * as Sequelize from 'sequelize';
 import * as debug from 'debug';
 
-export const cls: any = require('continuation-local-storage').createNamespace('ts-orm');
-(<any> Sequelize).cls = cls;
-
 import {ILogger} from './ILogger';
 
 export let connection: any;
@@ -46,8 +43,8 @@ export function connect(
 	logger = loggerIn;
 }
 
-export function beginTransaction(callback: () => Promise<any>): Promise<any> {
-	return connection.transaction(() => {
-		return callback();
+export function beginTransaction(callback: (t: Sequelize.Transaction) => Promise<any>): Promise<any> {
+	return connection.transaction((t: Sequelize.Transaction) => {
+		return callback(t);
 	});
 }
