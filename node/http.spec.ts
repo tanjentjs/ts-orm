@@ -281,13 +281,13 @@ describe('node/http', function() {
 
 		it('searches', function () {
 			postRequest.url += 'test.StringProp';
-			postRequest.on.withArgs('data').callsArgWith(1, '{"stringy":"asdasd"}');
+			postRequest.on.withArgs('data').callsArgWith(1, '{"where": {"stringy":"asdasd"}}');
 			const response = http.HTTP.handle(postRequest, responseData);
 			return Promise.all([
+				chai.expect(response).to.eventually.equal('[]'),
 				response.then(() => {
 					chai.expect(responseData.statusCode).to.equal(200);
 				}),
-				chai.expect(response).to.eventually.equal('[]'),
 				response.then(() => chai.expect(mockConnect.model.findAll.called).to.be.true),
 				response.then(() =>
 					chai.expect(mockConnect.model.findAll.getCall(0).args).to.deep.equal([{

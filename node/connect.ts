@@ -1,9 +1,8 @@
 import * as Sequelize from 'sequelize';
 import * as debug from 'debug';
-import * as _ from 'lodash';
 
 import {ILogger} from './ILogger';
-import {DataContract, getFieldsSources, needsCreate} from './DataContract';
+import {getFieldsSources, needsCreate} from './DataContract';
 
 export let connection: any;
 export let logger: ILogger;

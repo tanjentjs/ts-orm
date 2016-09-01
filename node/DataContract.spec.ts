@@ -13,7 +13,7 @@ describe('node/DataContract', function() {
 
 	before(function(){
 		mockery.enable();
-		mockery.registerMock('Sequelize', Sequelize);
+		mockery.registerMock('sequelize', Sequelize);
 		mockery.registerAllowables([
 			'./connect',
 			'./DataContract',

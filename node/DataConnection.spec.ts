@@ -262,13 +262,13 @@ describe('node/DataConnection', function() {
 
 		it('returns empty', function () {
 			return chai.expect(current.search({
-				find: false
+				where: {find: false}
 			})).to.eventually.deep.equal([]);
 		});
 
 		it('returns full', function () {
 			return chai.expect(current.search({
-				find: true
+				where: {find: true}
 			})).to.eventually.have.deep.property('[2].id', 42);
 		});
 	});

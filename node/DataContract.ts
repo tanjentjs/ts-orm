@@ -28,8 +28,7 @@ type DataContractType = typeof DataContract;
 export enum getFieldsSources {
 	save,
 	toJSON
-}
-
+};
 
 export const needsCreate: {
 	type: IDataContractConstruct<DataContract>
@@ -289,54 +288,6 @@ export abstract class DataContract implements IDataContract {
 		}
 	}
 
-	private internalSave(saveRelated: boolean, t: any): Promise<this> {
-		if (this.instance) {
-			let ret: Promise<any>;
-			ret = this.seedIds(t).then(() => this.instance.save());
-			if (saveRelated) {
-				ret = ret.then(() => this.saveDependants());
-			} else {
-				ret = this.instance.save(t);
-			}
-			return ret.then(() => this);
-		} else {
-			let ret: Promise<any> = this.seedIds(t)
-				.then(() => (<DataContractType> this.constructor).getSequelizeModel());
-
-			if (t) {
-				const name = (<IDataContractConstruct<this>> this.constructor).getContractName()
-				if (!needsCreate[t.name]) {
-					needsCreate[t.name] = <any> [];
-				}
-				if (!needsCreate[t.name][name]) {
-					needsCreate[t.name][name] = {
-						items: (<DataContract[]> []),
-						type: (<IDataContractConstruct<this>> this.constructor)
-					};
-				}
-				needsCreate[t.name][name].items.push(this);
-			} else {
-				ret = ret.then((model: Sequelize.Model<any, any>) => {
-					return model.create(this.getFields(getFieldsSources.save));
-				}).then((sqlData: any) => {
-					this.instance = sqlData;
-				});
-			}
-			if (saveRelated) {
-				return ret.then(() => this.saveDependants());
-			}
-			return ret.then(() => this);
-		}
-	}
-
-	private toJSON(): any {
-		const returnObj: any = this.getFields(getFieldsSources.toJSON);
-		returnObj.id = this.id;
-		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
-		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
-		return returnObj;
-	}
-
 	public getFields(reqSrc: getFieldsSources): any {
 		let returnObj: any = {};
 		const fields: string[] = this.fields;
@@ -369,6 +320,54 @@ export abstract class DataContract implements IDataContract {
 				}
 			}
 		});
+		return returnObj;
+	}
+
+	private internalSave(saveRelated: boolean, t: any): Promise<this> {
+		if (this.instance) {
+			let ret: Promise<any>;
+			ret = this.seedIds(t).then(() => this.instance.save());
+			if (saveRelated) {
+				ret = ret.then(() => this.saveDependants());
+			} else {
+				ret = this.instance.save(t);
+			}
+			return ret.then(() => this);
+		} else {
+			let ret: Promise<any> = this.seedIds(t)
+				.then(() => (<DataContractType> this.constructor).getSequelizeModel());
+
+			if (t) {
+				const name = (<IDataContractConstruct<this>> this.constructor).getContractName();
+				if (!needsCreate[t.name]) {
+					needsCreate[t.name] = <any> [];
+				}
+				if (!needsCreate[t.name][name]) {
+					needsCreate[t.name][name] = {
+						items: (<DataContract[]> []),
+						type: (<IDataContractConstruct<this>> this.constructor)
+					};
+				}
+				needsCreate[t.name][name].items.push(this);
+			} else {
+				ret = ret.then((model: Sequelize.Model<any, any>) => {
+					return model.create(this.getFields(getFieldsSources.save));
+				}).then((sqlData: any) => {
+					this.instance = sqlData;
+				});
+			}
+			if (saveRelated) {
+				return ret.then(() => this.saveDependants());
+			}
+			return ret.then(() => this);
+		}
+	}
+
+	private toJSON(): any {
+		const returnObj: any = this.getFields(getFieldsSources.toJSON);
+		returnObj.id = this.id;
+		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
+		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
 		return returnObj;
 	}
 
