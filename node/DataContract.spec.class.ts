@@ -1,5 +1,5 @@
 import {DataContract} from './DataContract';
-import {OneToOne, relatedField} from './relationships';
+import {OneToOne, OneToMany, ManyToOne, relatedField} from './relationships';
 import {field} from './field';
 import {Types} from '../shared/Types';
 
@@ -49,4 +49,14 @@ export class OneToOneA extends BaseContract {
 export class OneToOneB extends BaseContract {
 	@relatedField(() => OneToOneA)
 	public a: OneToOne<OneToOneA>;
+}
+
+export class OneToManyA extends BaseContract {
+	@relatedField(() => ManyToOneA)
+	public a: OneToMany<ManyToOneA>;
+}
+
+export class ManyToOneA extends BaseContract {
+	@relatedField(() => OneToManyA)
+	public a: ManyToOne<OneToManyA>;
 }

@@ -10,8 +10,9 @@ import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
 import { logger, connection } from './connect';
 import { OneToOne } from './relationships/OneToOne';
-import { ManyToOne } from "./relationships/ManyToOne";
-import { Relationship } from "./relationships/Relationship";
+import { ManyToOne } from './relationships/ManyToOne';
+import { OneToMany } from './relationships/OneToMany';
+import { Relationship } from './relationships/Relationship';
 
 export interface IDataContractConstruct<T extends DataContract> {
 	new (
@@ -81,7 +82,7 @@ export abstract class DataContract implements IDataContract {
 				const model: any = {};
 				_.forEach(fields, (fieldName) => {
 					const type: Types = Reflect.getMetadata(
-						"ORM:type",
+						'ORM:type',
 						instance,
 						fieldName
 					);
@@ -181,6 +182,12 @@ export abstract class DataContract implements IDataContract {
 								break;
 							case Types.relationshipManyToOne:
 								ManyToOne.addRelationship(
+									thisModel,
+									relatedModel
+								);
+								break;
+							case Types.relationshipOneToMany:
+								OneToMany.addRelationship(
 									thisModel,
 									relatedModel
 								);

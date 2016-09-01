@@ -34,6 +34,7 @@ describe('node/DataConnection', function() {
 			'./OneToOne',
 			'./relationships/ManyToOne',
 			'./ManyToOne',
+			'./relationships/OneToMany',
 			'./OneToMany',
 			'./Relationship',
 			'moment',
