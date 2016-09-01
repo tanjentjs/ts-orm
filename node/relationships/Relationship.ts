@@ -1,4 +1,5 @@
 import {DataContract, IDataContractConstruct} from '../DataContract';
+import * as Sequelize from 'sequelize';
 
 export abstract class Relationship<T extends DataContract, U> {
 	protected currentValue: U = null;
@@ -29,12 +30,12 @@ export abstract class Relationship<T extends DataContract, U> {
 		});
 	}
 
-	public seedIds(): Promise<any> {
+	public seedIds(t: Sequelize.Transaction): Promise<any> {
 		const savePromises: Promise<any>[] = [];
 
 		// tslint:disable-next-line:forin
 		for (const i in this.needsIds) {
-			savePromises.push((<any> this.needsIds[i]).internalSave(false));
+			savePromises.push((<any> this.needsIds[i]).internalSave(false, t));
 		}
 		this.needsIds = [];
 

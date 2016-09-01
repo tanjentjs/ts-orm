@@ -18,7 +18,7 @@ describe('node/relationships/OneToOne', function() {
 
 	before(function(){
 		mockery.enable();
-		mockery.registerMock('sequelize', Sequelize);
+		mockery.registerMock('Sequelize', Sequelize);
 		mockery.registerAllowables([
 			'../connect',
 			'./connect',
