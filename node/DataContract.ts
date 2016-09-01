@@ -72,7 +72,7 @@ export abstract class DataContract implements IDataContract {
 	private static needsSync: sequelize.Model<any, any>[] = [];
 
 	private static addModelSync(model: sequelize.Model<any, any>) {
-		_.remove(DataContract.needsSync, (o) => o.name === model.name);
+		_.remove(DataContract.needsSync, (o: any) => o.name === (<any> model).name);
 		DataContract.needsSync.push(model);
 	}
 
@@ -289,8 +289,6 @@ export abstract class DataContract implements IDataContract {
 			ret = this.seedIds().then(() => this.instance.save());
 			if (saveRelated) {
 				ret = ret.then(() => this.saveDependants());
-			} else {
-				ret = this.instance.save();
 			}
 			return ret.then(() => this);
 		} else {

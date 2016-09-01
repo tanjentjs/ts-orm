@@ -27,7 +27,8 @@ describe('node/http', function() {
 			'../shared/Types',
 			'./connect',
 			'moment',
-			'debug'
+			'debug',
+			'continuation-local-storage'
 		]);
 
 		connect = require('./connect');
