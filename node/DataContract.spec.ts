@@ -25,6 +25,9 @@ describe('node/DataContract', function() {
 			'./relationships',
 			'./OneToOne',
 			'./relationships/OneToOne',
+			'./relationships/OneToMany',
+			'./relationships/ManyToOne',
+			'./relatedField',
 			'moment',
 			'lodash',
 			'debug'
@@ -62,8 +65,9 @@ describe('node/DataContract', function() {
 			});
 
 			it('saves', function () {
-				current.save();
-				chai.expect(instance.save.getCalls().length).to.equal(1);
+				return current.save().then(() => {
+					chai.expect(instance.save.getCalls().length).to.equal(1);
+				});
 			});
 
 			it('destroys', function () {
