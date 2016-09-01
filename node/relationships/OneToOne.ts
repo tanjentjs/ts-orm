@@ -77,6 +77,7 @@ export class OneToOne<T extends DataContract> extends Relationship<T, T> {
 				(targetModel: sequelize.Model<any, any>) => {
 					try {
 						this.idName = (<any> targetModel).name + 'Id';
+						this.idName = this.idName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
 
 						if ((<any> this.parent).instance) {
 							(<any> this.parent).instance.set(this.idName, newModel && newModel.id);
