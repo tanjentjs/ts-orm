@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
-import { logger, connection } from './connect';
+import { logger, connection, cls } from './connect';
 import { OneToOne } from './relationships/OneToOne';
 import { ManyToOne } from './relationships/ManyToOne';
 import { OneToMany } from './relationships/OneToMany';
@@ -49,9 +49,7 @@ export abstract class DataContract implements IDataContract {
 				.getBaseModel()
 				.then(this.setupRelationships.bind(this))
 				.then((model: sequelize.Model<any, any>) => {
-					if (DataContract.needsSync.indexOf(model) === -1) {
-						DataContract.needsSync.push(model);
-					}
+					DataContract.addModelSync(model);
 					return model;
 				});
 		}
@@ -72,6 +70,11 @@ export abstract class DataContract implements IDataContract {
 	} = {};
 
 	private static needsSync: sequelize.Model<any, any>[] = [];
+
+	private static addModelSync(model: sequelize.Model<any, any>) {
+		_.remove(DataContract.needsSync, (o) => o.name === model.name);
+		DataContract.needsSync.push(model);
+	}
 
 	private static getBaseModel(): Promise<sequelize.Model<any, any>> {
 		return new Promise((resolve, reject) => {
@@ -194,9 +197,7 @@ export abstract class DataContract implements IDataContract {
 								break;
 						}
 
-						if (DataContract.needsSync.indexOf(relatedModel) === -1) {
-							DataContract.needsSync.push(relatedModel);
-						}
+						DataContract.addModelSync(relatedModel);
 					}));
 				} else {
 					this.relationshipsSetup = false;
