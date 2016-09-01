@@ -39,13 +39,11 @@ export abstract class DataConnection<T extends DataContract> implements IDataCon
 	}
 
 	public search(
-		criteria: sequelize.WhereOptions | Array<sequelize.col | sequelize.and | sequelize.or | string>
+		criteria: sequelize.FindOptions
 	): Promise<T[]> {
+		criteria.include = [{ all: true }];
 		return <any> this.model
-			.then((model) => model.findAll({
-				include: [{ all: true }],
-				where: criteria
-			}))
+			.then((model) => model.findAll(criteria))
 			.then((data: any[]) => {
 				let ret: T[] = [];
 				_.forEach(data, (value: any) => {

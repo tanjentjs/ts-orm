@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import * as debug from 'debug';
 
 import {ILogger} from './ILogger';
+import {getFieldsSources, needsCreate} from './DataContract';
 
 export let connection: any;
 export let logger: ILogger;
@@ -37,7 +38,7 @@ export function connect(
 	if (!options) {
 		options = {};
 	}
-	options.logging = loggerIn.info.bind(loggerIn, 'sequelize');
+	options.logging = loggerIn.info.bind(loggerIn, 'Sequelize');
 
 	connection = new Sequelize(database, username, password, options);
 	logger = loggerIn;
@@ -45,6 +46,28 @@ export function connect(
 
 export function beginTransaction(callback: (t: Sequelize.Transaction) => Promise<any>): Promise<any> {
 	return connection.transaction((t: Sequelize.Transaction) => {
-		return callback(t);
+		return callback(t).then(() => {
+			const promises: Promise<any>[] = [];
+			const createList = needsCreate[(<any> t).name];
+			delete needsCreate[(<any> t).name];
+
+			// tslint:disable-next-line:forin
+			for (const i in createList) {
+				const data: any[] = [];
+				// tslint:disable-next-line:forin
+				for (const j in createList[i].items) {
+					data[j] = createList[i].items[j].getFields(getFieldsSources.save);
+				}
+
+				promises.push(
+					createList[i].type.getSequelizeModel()
+					.then((model) => model.bulkCreate(data, {
+						transaction: t,
+						validate: true
+					}))
+				);
+			}
+			return Promise.all(promises);
+		});
 	});
 }

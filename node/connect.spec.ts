@@ -11,6 +11,18 @@ describe('node/connect', function() {
 		mockery.registerMock('sequelize', Sequelize);
 		mockery.registerAllowables([
 			'./connect',
+			'./DataContract',
+			'../DataContract',
+			'./field',
+			'./Relationship',
+			'../shared/field',
+			'../shared/Types',
+			'./relationships/OneToOne',
+			'./relationships/OneToMany',
+			'./relationships/ManyToOne',
+			'./OneToOne',
+			'./OneToMany',
+			'./ManyToOne',
 			'lodash',
 			'debug',
 			'continuation-local-storage',
@@ -24,6 +36,7 @@ describe('node/connect', function() {
 			'http',
 			'child_process',
 			'timers',
+			'moment',
 			'dns',
 			'fs'
 		]);

@@ -1,7 +1,7 @@
 // DO NOT REMOVE THIS IMPORT it is required for this file to function
 // tslint:disable-next-line:no-unused-variable
 import * as reflectMetadata from 'reflect-metadata';
-import * as sequelize from 'sequelize';
+import * as Sequelize from 'sequelize';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
@@ -19,7 +19,7 @@ export interface IDataContractConstruct<T extends DataContract> {
 		instance: any
 	): T;
 	getContractName(): string;
-	getSequelizeModel(relationships?: boolean): Promise<sequelize.Model<any, any>>;
+	getSequelizeModel(relationships?: boolean): Promise<Sequelize.Model<any, any>>;
 	isFirst(dest: IDataContractConstruct<any>): boolean;
 }
 
@@ -28,7 +28,12 @@ type DataContractType = typeof DataContract;
 export enum getFieldsSources {
 	save,
 	toJSON
-}
+};
+
+export const needsCreate: {
+	type: IDataContractConstruct<DataContract>
+	items: DataContract[]
+}[][] = (<any> []);
 
 export abstract class DataContract implements IDataContract {
 	public static moduleName: string;
@@ -40,7 +45,7 @@ export abstract class DataContract implements IDataContract {
 		return this.moduleName + this.name;
 	}
 
-	public static getSequelizeModel(): Promise<sequelize.Model<any, any>> {
+	public static getSequelizeModel(): Promise<Sequelize.Model<any, any>> {
 		if (DataContract.models[this.moduleName] === undefined) {
 			DataContract.models[this.moduleName] = {};
 		}
@@ -48,7 +53,7 @@ export abstract class DataContract implements IDataContract {
 			DataContract.models[this.moduleName][this.name] = this
 				.getBaseModel()
 				.then(this.setupRelationships.bind(this))
-				.then((model: sequelize.Model<any, any>) => {
+				.then((model: Sequelize.Model<any, any>) => {
 					DataContract.addModelSync(model);
 					return model;
 				});
@@ -65,18 +70,18 @@ export abstract class DataContract implements IDataContract {
 
 	private static models: {
 		[moduleName: string]: {
-			[contractName: string]: Promise<sequelize.Model<any, any>>;
+			[contractName: string]: Promise<Sequelize.Model<any, any>>;
 		}
 	} = {};
 
-	private static needsSync: sequelize.Model<any, any>[] = [];
+	private static needsSync: Sequelize.Model<any, any>[] = [];
 
-	private static addModelSync(model: sequelize.Model<any, any>) {
+	private static addModelSync(model: Sequelize.Model<any, any>) {
 		_.remove(DataContract.needsSync, (o: any) => o.name === (<any> model).name);
 		DataContract.needsSync.push(model);
 	}
 
-	private static getBaseModel(): Promise<sequelize.Model<any, any>> {
+	private static getBaseModel(): Promise<Sequelize.Model<any, any>> {
 		return new Promise((resolve, reject) => {
 			try {
 				const constructor: any = this;
@@ -93,27 +98,27 @@ export abstract class DataContract implements IDataContract {
 					switch (type) {
 						case Types.string:
 							model[fieldName] = {
-								type: sequelize.STRING
+								type: Sequelize.STRING
 							};
 							break;
 						case Types.float:
 							model[fieldName] = {
-								type: sequelize.FLOAT
+								type: Sequelize.FLOAT
 							};
 							break;
 						case Types.integer:
 							model[fieldName] = {
-								type: sequelize.INTEGER
+								type: Sequelize.INTEGER
 							};
 							break;
 						case Types.bigInt:
 							model[fieldName] = {
-								type: sequelize.BIGINT
+								type: Sequelize.BIGINT
 							};
 							break;
 						case Types.dateTimeTz:
 							model[fieldName] = {
-								type: sequelize.DATE
+								type: Sequelize.DATE
 							};
 							break;
 						case Types.relationshipOneToOne:
@@ -142,7 +147,7 @@ export abstract class DataContract implements IDataContract {
 		});
 	}
 
-	private static setupRelationships(thisModel): Promise<sequelize.Model<any, any>> {
+	private static setupRelationships(thisModel): Promise<Sequelize.Model<any, any>> {
 		const constructor: any = this;
 		const instance: DataContract = (new constructor(null, null));
 		const fields = instance.fields;
@@ -271,8 +276,8 @@ export abstract class DataContract implements IDataContract {
 		return JSON.stringify(this.toJSON());
 	}
 
-	public save(): Promise<this> {
-		return this.internalSave(true);
+	public save(t?: Sequelize.Transaction): Promise<this> {
+		return this.internalSave(true, t);
 	}
 
 	public delete(): Promise<void> {
@@ -283,39 +288,7 @@ export abstract class DataContract implements IDataContract {
 		}
 	}
 
-	private internalSave(saveRelated: boolean): Promise<this> {
-		if (this.instance) {
-			let ret: Promise<any>;
-			ret = this.seedIds().then(() => this.instance.save());
-			if (saveRelated) {
-				ret = ret.then(() => this.saveDependants());
-			}
-			return ret.then(() => this);
-		} else {
-			let ret: Promise<any> = this.seedIds()
-				.then(() => (<DataContractType> this.constructor).getSequelizeModel())
-				.then((model: sequelize.Model<any, any>) => {
-					return model.create(this.getFields(getFieldsSources.save));
-				})
-				.then((sqlData: any) => {
-					this.instance = sqlData;
-				});
-			if (saveRelated) {
-				return ret.then(() => this.saveDependants());
-			}
-			return ret.then(() => this);
-		}
-	}
-
-	private toJSON(): any {
-		const returnObj: any = this.getFields(getFieldsSources.toJSON);
-		returnObj.id = this.id;
-		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
-		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
-		return returnObj;
-	}
-
-	private getFields(reqSrc: getFieldsSources): any {
+	public getFields(reqSrc: getFieldsSources): any {
 		let returnObj: any = {};
 		const fields: string[] = this.fields;
 		_.forEach(fields, (fieldName: string) => {
@@ -350,7 +323,55 @@ export abstract class DataContract implements IDataContract {
 		return returnObj;
 	}
 
-	private seedIds(): Promise<any> {
+	private internalSave(saveRelated: boolean, t: any): Promise<this> {
+		if (this.instance) {
+			let ret: Promise<any>;
+			ret = this.seedIds(t).then(() => this.instance.save());
+			if (saveRelated) {
+				ret = ret.then(() => this.saveDependants());
+			} else {
+				ret = this.instance.save(t);
+			}
+			return ret.then(() => this);
+		} else {
+			let ret: Promise<any> = this.seedIds(t)
+				.then(() => (<DataContractType> this.constructor).getSequelizeModel());
+
+			if (t) {
+				const name = (<IDataContractConstruct<this>> this.constructor).getContractName();
+				if (!needsCreate[t.name]) {
+					needsCreate[t.name] = <any> [];
+				}
+				if (!needsCreate[t.name][name]) {
+					needsCreate[t.name][name] = {
+						items: (<DataContract[]> []),
+						type: (<IDataContractConstruct<this>> this.constructor)
+					};
+				}
+				needsCreate[t.name][name].items.push(this);
+			} else {
+				ret = ret.then((model: Sequelize.Model<any, any>) => {
+					return model.create(this.getFields(getFieldsSources.save));
+				}).then((sqlData: any) => {
+					this.instance = sqlData;
+				});
+			}
+			if (saveRelated) {
+				return ret.then(() => this.saveDependants());
+			}
+			return ret.then(() => this);
+		}
+	}
+
+	private toJSON(): any {
+		const returnObj: any = this.getFields(getFieldsSources.toJSON);
+		returnObj.id = this.id;
+		returnObj.createdAt = this.createdAt && this.createdAt.toISOString();
+		returnObj.updatedAt = this.updatedAt && this.updatedAt.toISOString();
+		return returnObj;
+	}
+
+	private seedIds(t: Sequelize.Transaction): Promise<any> {
 		const promises: Promise<any>[] = [];
 
 		const fields: string[] = this.fields;
@@ -362,7 +383,7 @@ export abstract class DataContract implements IDataContract {
 			switch (type) {
 				case(Types.relationshipOneToOne):
 				case(Types.relationshipManyToOne):
-					promises.push((<Relationship<any, any>> value).seedIds());
+					promises.push((<Relationship<any, any>> value).seedIds(t));
 					break;
 			}
 		});
