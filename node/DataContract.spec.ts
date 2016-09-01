@@ -30,7 +30,8 @@ describe('node/DataContract', function() {
 			'./relatedField',
 			'moment',
 			'lodash',
-			'debug'
+			'debug',
+			'continuation-local-storage'
 		]);
 
 		connect = require('./connect');

@@ -12,7 +12,20 @@ describe('node/connect', function() {
 		mockery.registerAllowables([
 			'./connect',
 			'lodash',
-			'debug'
+			'debug',
+			'continuation-local-storage',
+			'assert',
+			'emitter-listener',
+			'shimmer',
+			'async-listener',
+			'./glue.js',
+			'util',
+			'net',
+			'http',
+			'child_process',
+			'timers',
+			'dns',
+			'fs'
 		]);
 
 		connect = require('./connect');

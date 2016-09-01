@@ -32,7 +32,8 @@ describe('node/relationships/OneToOne', function() {
 			'./OneToOne',
 			'moment',
 			'lodash',
-			'debug'
+			'debug',
+			'continuation-local-storage'
 		]);
 
 		connect = require('../connect');

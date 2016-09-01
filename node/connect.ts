@@ -42,3 +42,9 @@ export function connect(
 	connection = new Sequelize(database, username, password, options);
 	logger = loggerIn;
 }
+
+export function beginTransaction(callback: (t: Sequelize.Transaction) => Promise<any>): Promise<any> {
+	return connection.transaction((t: Sequelize.Transaction) => {
+		return callback(t);
+	});
+}

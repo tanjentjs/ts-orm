@@ -45,7 +45,9 @@ describe('node/DataConnection', function() {
 			'assert',
 			'events',
 			'stream',
-			'debug'
+			'debug',
+			'continuation-local-storage',
+			'emitter-listener'
 		]);
 
 		connect = require('./connect');
