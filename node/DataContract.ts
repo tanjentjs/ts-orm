@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
-import { logger, connection } from './connect';
+import { logger, connection, cls } from './connect';
 import { OneToOne } from './relationships/OneToOne';
 import { ManyToOne } from './relationships/ManyToOne';
 import { OneToMany } from './relationships/OneToMany';
@@ -35,6 +35,20 @@ export abstract class DataContract implements IDataContract {
 	public static name: string;
 	public static relationshipsSetup: boolean = false;
 	public static relationshipsSetupList: any[] = [];
+	public static get needsCreate(): {
+		[contractName: string]: {
+			type: IDataContractConstruct<DataContract>
+			items: DataContract[]
+		}
+	} {
+		if (DataContract.inTransaction) {
+			if (!cls.get('createArray')) {
+				cls.set('createArray', []);
+			}
+			return cls.get('createArray');
+		}
+		return null;
+	}
 
 	public static getContractName(): string {
 		return this.moduleName + this.name;
@@ -68,6 +82,10 @@ export abstract class DataContract implements IDataContract {
 			[contractName: string]: Promise<sequelize.Model<any, any>>;
 		}
 	} = {};
+
+	private static get inTransaction(): boolean {
+		return cls.active && cls.active.transaction !== undefined;
+	}
 
 	private static needsSync: sequelize.Model<any, any>[] = [];
 
@@ -289,17 +307,32 @@ export abstract class DataContract implements IDataContract {
 			ret = this.seedIds().then(() => this.instance.save());
 			if (saveRelated) {
 				ret = ret.then(() => this.saveDependants());
+			} else {
+				ret = this.instance.save();
 			}
 			return ret.then(() => this);
 		} else {
 			let ret: Promise<any> = this.seedIds()
-				.then(() => (<DataContractType> this.constructor).getSequelizeModel())
-				.then((model: sequelize.Model<any, any>) => {
+				.then(() => (<DataContractType> this.constructor).getSequelizeModel());
+
+			if (DataContract.inTransaction) {
+				const needsCreate = DataContract.needsCreate;
+				const name = (<IDataContractConstruct<this>> this.constructor).getContractName()
+				if (!needsCreate[name]) {
+					needsCreate[name] = {
+						items: (<DataContract[]> []),
+						type: (<IDataContractConstruct<this>> this.constructor)
+					};
+				}
+				needsCreate[name].items.push(this);
+			} else {
+				debugger;
+				ret = ret.then((model: sequelize.Model<any, any>) => {
 					return model.create(this.getFields(getFieldsSources.save));
-				})
-				.then((sqlData: any) => {
+				}).then((sqlData: any) => {
 					this.instance = sqlData;
 				});
+			}
 			if (saveRelated) {
 				return ret.then(() => this.saveDependants());
 			}

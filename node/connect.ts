@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import * as debug from 'debug';
 
 import {ILogger} from './ILogger';
+import {DataContract} from './DataContract';
 
 export let connection: any;
 export let logger: ILogger;
@@ -45,6 +46,10 @@ export function connect(
 
 export function beginTransaction(callback: (t: Sequelize.Transaction) => Promise<any>): Promise<any> {
 	return connection.transaction((t: Sequelize.Transaction) => {
-		return callback(t);
+		debugger;
+		return callback(t).then(() => {
+			debugger;
+			console.log(DataContract.needsCreate);
+		});
 	});
 }
