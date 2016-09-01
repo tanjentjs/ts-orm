@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import { field } from './field';
 import { Types } from '../shared/Types';
 import { IDataContract } from '../shared/DataObject';
-import { logger, connection, cls } from './connect';
+import { logger, connection } from './connect';
 import { OneToOne } from './relationships/OneToOne';
 import { ManyToOne } from './relationships/ManyToOne';
 import { OneToMany } from './relationships/OneToMany';
