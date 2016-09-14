@@ -1,3 +1,5 @@
+*ON HOLD* This project is mostly on hold until the typescript extensability stuff is implemented. That will probably result in soem API changes as there will be better ways to structure the api *ON HOLD*
+
 Overview
 ========
 An object relational model which uses typescript annotations to define the data
