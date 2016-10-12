@@ -2,6 +2,8 @@
 
 This project is mostly on hold until the typescript extensability stuff is implemented. That will probably result in some API changes as there will be better ways to structure the api 
 
+See https://github.com/microsoft/typescript/issues/6508
+
 ***ON HOLD***
 
 Overview
