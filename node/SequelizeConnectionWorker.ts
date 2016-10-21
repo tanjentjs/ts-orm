@@ -1,0 +1,144 @@
+import * as Sequelize from 'sequelize';
+import * as Collections from 'typescript-collections';
+import {Injectable} from '@angular/core';
+
+import {ConnectionWorker} from '../shared/ConnectionWorker';
+import {BaseContract, BaseContractConstruct} from '../shared/BaseContract';
+import {BaseConnection} from "../shared/BaseConnection";
+import {WhereOptions} from "../shared/WhereTypes";
+import {Types} from "../shared/Types";
+
+export type SaveOptions = Sequelize.InstanceSaveOptions;
+
+export interface IStorage {
+	model: Sequelize.Model;
+	instance: Sequelize.Instance;
+}
+
+let sequelize: Sequelize.Sequelize;
+
+export function connect() {
+	sequelize = new Sequelize('database', 'username', 'password', {
+		host: 'localhost',
+		dialect: 'sqlite',
+
+		pool: {
+			max: 5,
+			min: 0,
+			idle: 10000
+		},
+
+		// SQLite only
+		storage: ':memory'
+	});
+}
+
+@Injectable()
+export class SequelizeConnectionWorker extends ConnectionWorker {
+	private models = new Collections.Dictionary<BaseContractConstruct<any>, Sequelize.Model>();
+
+	// TODO: figure out the typing for initial
+	public create<T extends BaseContract>(
+		initial: any,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T> {
+		return this.getModel(type)
+			.then((model) => model.create(initial))
+			.then(this.createContractFn(parent, type));
+	}
+
+	public save<T extends BaseContract>(
+		contract: T,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T> {
+		return (<IStorage> contract._connectionStorage)
+			.instance
+			.save()
+			.then(this.updateContractFn(contract));
+	}
+
+	public find<T extends BaseContract>(
+		where: WhereOptions<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T> {
+		return this.getModel(type)
+			.then((model) => model.find(where))
+			.then(this.createContractFn(parent, type));
+	}
+
+	public findAll<T extends BaseContract>(
+		where: WhereOptions<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T[]> {
+		return this.getModel(type)
+			.then((model) => model.find(where))
+			.then((instances: Sequelize.Instance[]) => {
+				const ret: T[] = [];
+
+				// tslint:disable-next-line:forin
+				for (const i in instances) {
+					ret.push(this.createContract(instances[i]));
+				}
+
+				return ret;
+			});
+	}
+
+	private updateContractFn<T extends BaseContract>(contract: T): (newInstance: Sequelize.Instance) => T {
+		return (newInstance: Sequelize.Instance): T => {
+			(<IStorage> contract._connectionStorage).instance = newInstance;
+			return contract;
+		};
+	}
+
+	private createContractFn<T extends BaseContract>(
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): (newInstance: Sequelize.Instance) => Promise<T> {
+		return (newInstance: Sequelize.Instance) => {
+			const ret = new type(parent);
+			(<IStorage> ret._connectionStorage).instance = newInstance;
+			return this.getModel(type).then((model) => {
+				(<IStorage> ret._connectionStorage).model = model;
+				return ret;
+			};
+		};
+	}
+
+	private getModel<T extends BaseContract>(type: BaseContractConstruct<T>): Promise<Sequelize.Model> {
+		if (!this.models.getValue(type)) {
+			const fields = Reflect.getMetadata('fields', type) || {};
+			const sequelizeFields = {};
+
+			// tslint:ignore-next-line:forin
+			for (var i in fields) {
+				sequelizeFields[i] = {};
+
+				switch (fields[i].type) {
+					case Types.string:
+						sequelizeFields[i].type = Sequelize.STRING;
+						break;
+					default:
+						throw new Error(fields[i].type + ' is not supported');
+				}
+			}
+
+			const definition = sequelize.define(Reflect.getMetadata('name', type), sequelizeFields);
+			this.models.setValue(type, definition);
+			return definition.sync().then(() => definition);
+		}
+		return Promise.resolve(this.models.getValue(type));
+	}
+
+	public getField<T extends BaseContract>(contract: T, field: string): any {
+		return (<IStorage> contract._connectionStorage).instance[field];
+	}
+
+	public setField<T extends BaseContract>(contract: T, field: string, value: any): any {
+		return (<IStorage> contract._connectionStorage).instance[field] = value;
+	}
+}
