@@ -9,4 +9,13 @@ export abstract  class BaseContract {
 	public save(): this {
 		return this.parent.save(this);
 	}
+	public toJSON() {
+		const fields = Reflect.getMetadata('fields', this.constructor);
+		const ret = {};
+		// tslint:ignore-next-line:forin
+		for (const i in fields) {
+			ret[i] = this[i];
+		}
+		return ret;
+	}
 }

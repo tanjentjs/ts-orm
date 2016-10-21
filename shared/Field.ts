@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import {Types} from "./Types";
 import {BaseConnection} from "./BaseConnection";
+import * as Collections from 'typescript-collections';
 
 let appRoot: string = null;
 
@@ -8,13 +9,24 @@ export function setAppRoot(root: string) {
 	appRoot = root;
 }
 
+function extractPath(stackLine: string) {
+	let path = stackLine.split(':')[0];
+	if (path.match(/\(/)) {
+		path = path.split('(')[1];
+	} else {
+		path = path.split(' ');
+		path = path[path.length - 1];
+	}
+	return path;
+}
+
 function notAtSource(stackLine) {
 	if (stackLine === 'Error') {
 		return true;
 	}
-	const path = stackLine.split(':')[0].split('(')[1];
+	const path = extractPath(stackLine);
 	if (
-		path.match(/shared\/field[.][jt]s$/) ||
+		path.match(/shared\/Field[.][jt]s$/) ||
 		path.match(/reflect-metadata\/[^\/]+[.]js$/)
 	) {
 		return true;
@@ -22,7 +34,7 @@ function notAtSource(stackLine) {
 	return false;
 }
 
-export function field(type?: Types) {
+export function Field(type?: Types) {
 	return (target, propertyName: string) => {
 		// Build the object's "name" if it doesn't exist
 		if (!Reflect.getMetadata('name', target.constructor)) {
@@ -31,14 +43,14 @@ export function field(type?: Types) {
 			while (notAtSource(stack[pathLocation])) {
 				pathLocation++;
 			}
-			let path = stack[pathLocation].split(':')[0].split('(')[1];
+			let path = extractPath(stack[pathLocation]);
 			if (appRoot === null) {
 				throw Error('You must set the appRoot!');
 			}
 			if (path.substring(0, appRoot.length) === appRoot) {
-				path = path.substring(appRoot.length).replace(/^[/]/, '');
+				path = path.substring(appRoot.length).replace(/^[/]*/, '');
 			}
-			path = path.replace('/', '$').replace(/[.][tj]s$/, '');
+			path = path.replace(/[/]/g, '$').replace(/[.][tj]s$/, '');
 			Reflect.defineMetadata('name', path, target.constructor);
 		}
 

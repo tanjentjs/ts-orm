@@ -17,20 +17,13 @@ export interface IStorage {
 
 let sequelize: Sequelize.Sequelize;
 
-export function connect() {
-	sequelize = new Sequelize('database', 'username', 'password', {
-		host: 'localhost',
-		dialect: 'sqlite',
-
-		pool: {
-			max: 5,
-			min: 0,
-			idle: 10000
-		},
-
-		// SQLite only
-		storage: ':memory'
-	});
+export function connect(
+	database: string,
+	username: string,
+	password: string,
+	options: Sequelize.Options
+) {
+	sequelize = new Sequelize(database, username, password, options);
 }
 
 @Injectable()
@@ -75,16 +68,17 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		type: BaseContractConstruct<T>
 	): Promise<T[]> {
 		return this.getModel(type)
-			.then((model) => model.find(where))
+			.then((model) => model.findAll(where))
 			.then((instances: Sequelize.Instance[]) => {
 				const ret: T[] = [];
+				const createContract = this.createContractFn(parent, type);
 
 				// tslint:disable-next-line:forin
 				for (const i in instances) {
-					ret.push(this.createContract(instances[i]));
+					ret.push(createContract(instances[i]));
 				}
 
-				return ret;
+				return Promise.all(ret);
 			});
 	}
 
