@@ -1,5 +1,4 @@
 import * as Sequelize from 'sequelize';
-import * as Collections from 'typescript-collections';
 import {Injectable} from '@angular/core';
 
 import {ConnectionWorker} from '../shared/ConnectionWorker';
@@ -28,7 +27,7 @@ export function connect(
 
 @Injectable()
 export class SequelizeConnectionWorker extends ConnectionWorker {
-	private models = new Collections.Dictionary<BaseContractConstruct<any>, Sequelize.Model>();
+	private models = {};
 
 	// TODO: figure out the typing for initial
 	public create<T extends BaseContract>(
@@ -50,6 +49,16 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 			.instance
 			.save()
 			.then(this.updateContractFn(contract));
+	}
+
+	public delete<T extends BaseContract>(
+		contract: T,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T[]> {
+		return (<IStorage> contract._connectionStorage)
+			.instance
+			.destroy();
 	}
 
 	public find<T extends BaseContract>(
@@ -82,6 +91,24 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 			});
 	}
 
+	public findById<T extends BaseContract>(
+		id: number,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T[]> {
+		return this.getModel(type)
+			.then((model) => model.findById(id))
+			.then(this.createContractFn(parent, type));
+	}
+
+	public getField<T extends BaseContract>(contract: T, field: string): any {
+		return (<IStorage> contract._connectionStorage).instance[field];
+	}
+
+	public setField<T extends BaseContract>(contract: T, field: string, value: any): any {
+		return (<IStorage> contract._connectionStorage).instance[field] = value;
+	}
+
 	private updateContractFn<T extends BaseContract>(contract: T): (newInstance: Sequelize.Instance) => T {
 		return (newInstance: Sequelize.Instance): T => {
 			(<IStorage> contract._connectionStorage).instance = newInstance;
@@ -104,12 +131,12 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	}
 
 	private getModel<T extends BaseContract>(type: BaseContractConstruct<T>): Promise<Sequelize.Model> {
-		if (!this.models.getValue(type)) {
+		if (!this.models[this.getName(type)]) {
 			const fields = Reflect.getMetadata('fields', type) || {};
 			const sequelizeFields = {};
 
 			// tslint:ignore-next-line:forin
-			for (var i in fields) {
+			for (const i in fields) {
 				sequelizeFields[i] = {};
 
 				switch (fields[i].type) {
@@ -121,18 +148,14 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 				}
 			}
 
-			const definition = sequelize.define(Reflect.getMetadata('name', type), sequelizeFields);
-			this.models.setValue(type, definition);
+			const definition = sequelize.define(this.getName(type), sequelizeFields);
+			this.models[type] = definition;
 			return definition.sync().then(() => definition);
 		}
-		return Promise.resolve(this.models.getValue(type));
+		return Promise.resolve(this.models[this.getName(type)]);
 	}
 
-	public getField<T extends BaseContract>(contract: T, field: string): any {
-		return (<IStorage> contract._connectionStorage).instance[field];
-	}
-
-	public setField<T extends BaseContract>(contract: T, field: string, value: any): any {
-		return (<IStorage> contract._connectionStorage).instance[field] = value;
+	private getName<T extends BaseContract>(type: BaseContractConstruct<T>): string {
+		return Reflect.getMetadata('name', type);
 	}
 }

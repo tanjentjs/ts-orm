@@ -1,21 +1,24 @@
-import * as Sequelize from 'sequelize';
 import {Types} from "./Types";
 import {BaseConnection} from "./BaseConnection";
-import * as Collections from 'typescript-collections';
 
-let appRoot: string = null;
+let appRoot: string[] = null;
 
-export function setAppRoot(root: string) {
-	appRoot = root;
+export function setAppRoot(root: string | string[]) {
+	if (!Array.isArray(root)) {
+		root = <any> [root];
+	}
+
+	appRoot = <any> root;
 }
 
 function extractPath(stackLine: string) {
-	let path = stackLine.split(':')[0];
+	let splitStack = stackLine.split(':')
+	let path = splitStack.splice(0, splitStack.length - 2).join(':');
 	if (path.match(/\(/)) {
 		path = path.split('(')[1];
 	} else {
-		path = path.split(' ');
-		path = path[path.length - 1];
+		const pathArr = path.split(' ');
+		path = pathArr[pathArr.length - 1];
 	}
 	return path;
 }
@@ -34,11 +37,22 @@ function notAtSource(stackLine) {
 	return false;
 }
 
+function stripAppRoot(path) {
+	// tslint:ignore-next-line:forin
+	for (const i in appRoot) {
+		if (path.substring(0, appRoot[i].length) === appRoot[i]) {
+			return path.substring(appRoot[i].length).replace(/^[/]*/, '');
+		}
+	}
+
+	return path;
+}
+
 export function Field(type?: Types) {
 	return (target, propertyName: string) => {
 		// Build the object's "name" if it doesn't exist
 		if (!Reflect.getMetadata('name', target.constructor)) {
-			const stack = new Error().stack.replace(/\r/g, '').split('\n');
+			const stack = (<any> new Error()).stack.replace(/\r/g, '').split('\n');
 			let pathLocation = 0;
 			while (notAtSource(stack[pathLocation])) {
 				pathLocation++;
@@ -47,10 +61,7 @@ export function Field(type?: Types) {
 			if (appRoot === null) {
 				throw Error('You must set the appRoot!');
 			}
-			if (path.substring(0, appRoot.length) === appRoot) {
-				path = path.substring(appRoot.length).replace(/^[/]*/, '');
-			}
-			path = path.replace(/[/]/g, '$').replace(/[.][tj]s$/, '');
+			path = stripAppRoot(path).replace(/[/]/g, '$').replace(/[.][tj]s$/, '');
 			Reflect.defineMetadata('name', path, target.constructor);
 		}
 

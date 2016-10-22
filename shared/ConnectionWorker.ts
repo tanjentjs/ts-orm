@@ -17,6 +17,11 @@ export abstract class ConnectionWorker {
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<T>;
+	public abstract delete<T extends BaseContract>(
+		contract: T,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T[]>;
 	public abstract find<T extends BaseContract>(
 		where: WhereOptions<T>,
 		parent: BaseConnection<T>,
@@ -24,6 +29,11 @@ export abstract class ConnectionWorker {
 	): Promise<T>;
 	public abstract findAll<T extends BaseContract>(
 		where: WhereOptions<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<T[]>;
+	public abstract findById<T extends BaseContract>(
+		id: number,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<T[]>;

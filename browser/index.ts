@@ -1,1 +1,1 @@
-export * from 'HttpConnectionWorker';
+export * from './HttpConnectionWorker';

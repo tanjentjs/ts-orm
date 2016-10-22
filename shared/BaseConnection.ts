@@ -9,14 +9,25 @@ export abstract class BaseConnection<T extends BaseContract> {
 	public create(initial: any): Promise<T> {
 		return this.worker.create(initial, this, this.getContract());
 	}
+
 	public save(contract: T): Promise<T> {
 		return this.worker.save(contract, this, this.getContract());
 	}
+
+	public delete(contract: T): Promise<T[]> {
+		return this.worker.delete(contract, this, this.getContract());
+	}
+
 	public find(where: WhereOptions<T>): Promise<T> {
 		return this.worker.find(where, this, this.getContract());
 	}
-	public findAll<T>(where: WhereOptions<T>): Promise<T[]> {
-		return this.worker.findAll(where, this, this.getContract());
+
+	public findAll(where: WhereOptions<T>): Promise<T[]> {
+		return this.worker.findAll<T>(where, this, this.getContract());
+	}
+
+	public findById(id: number): Promise<T[]> {
+		return this.worker.findById(id, this, this.getContract());
 	}
 
 	public getField(contract: T, field: string): any {
