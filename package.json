@@ -2,7 +2,7 @@
   "name": "tanjentjs-ts-orm",
   "version": "0.0.0",
   "description": "An object relational model which uses typescript annotations to define the schema",
-  "main": "src/index",
+  "main": "index",
   "scripts": {
     "lint": "tslint -e \"node_modules/**\" -e \"typings/**\" -e \"**/*.d.ts\" \"**/*.ts\"",
     "mocha": "./run_mocha.sh",
@@ -53,6 +53,7 @@
     "lodash": "^4.13.1",
     "moment": "^2.13.0",
     "reflect-metadata": "^0.1.3",
-    "sequelize": "^3.24.5"
+    "sequelize": "^3.24.5",
+    "typescript-collections": "^1.2.3"
   }
 }
