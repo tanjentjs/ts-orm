@@ -1,4 +1,6 @@
 import {BaseConnection} from './BaseConnection';
+import {IFieldConfig} from "./Field";
+import {Types} from "./Types";
 
 export type BaseContractConstruct<T extends BaseContract> = new (parent: BaseConnection<T>) => T;
 
@@ -11,15 +13,21 @@ export abstract  class BaseContract {
 		return this.parent.getField(this, 'id');
 	}
 
-	public save(): this {
+	public save(): Promise<this> {
 		return this.parent.save(this);
 	}
+
 	public toJSON() {
-		const fields = Reflect.getMetadata('fields', this.constructor);
+		const fields: IFieldConfig[] = Reflect.getMetadata('fields', this.constructor);
 		const ret = {};
 		// tslint:ignore-next-line:forin
 		for (const i in fields) {
-			ret[i] = this[i];
+			if (
+				fields[i].type !== Types.foreignKey &&
+				fields[i].type !== Types.remoteKeys
+			) {
+				ret[i] = this[i];
+			}
 		}
 		ret.id = this.id;
 		return ret;

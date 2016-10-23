@@ -4,7 +4,7 @@ export enum Types {
 	bigInt,
 	float,
 	dateTimeTz,
-	relationshipOneToOne,
-	relationshipManyToOne,
-	relationshipOneToMany
+	foreignKey,
+	remoteKeys,
+	remoteKey
 }

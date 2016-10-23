@@ -37,7 +37,41 @@ export abstract class ConnectionWorker {
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<T[]>;
-
+	public abstract fetchMany<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U[]>;
+	public abstract fetchOne<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<U>,
+		field: string,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U>;
+	public abstract addRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		addContract: U,
+		destType: BaseContractConstruct<U>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void>;
+	public abstract removeRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		remContract: U,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void>;
+	public abstract setRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		setContract: U,
+		field: string,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void>;
 	public abstract getField<T extends BaseContract>(contract: T, field: string): any;
 	public abstract setField<T extends BaseContract>(contract: T, field: string, value: any): any;
 }

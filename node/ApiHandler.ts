@@ -4,6 +4,7 @@ import {API_BASE} from '../shared/index';
 import {fetchables} from '../shared/Fetchable';
 import {BaseConnection} from "../shared/BaseConnection";
 import {BaseContract} from "../shared/BaseContract";
+import {ForeignKey} from "../shared/ForeignKey";
 
 function censor(censor) {
 	var i = 0;
@@ -26,6 +27,7 @@ export class ApiHandler {
 		private injector: Injector,
 		@Inject(API_BASE) private API_BASE: string
 	) { /* */ }
+
 	public handle(req: http.Request, res: http.Response) {
 		if (req.method !== 'POST') {
 			res.status(401).send(JSON.stringify({
@@ -59,56 +61,78 @@ export class ApiHandler {
 				}
 
 				if (url[1] === 'save') {
-					if (inputs[0] === undefined || inputs[0].id === undefined) {
-						res.status(412).send(JSON.stringify({
-							message: 'You must send an object with an id property'
-						}));
-					} else {
-						object.findById(inputs[0].id).then(
-							(obj: BaseContract) => {
-								// tsline:ignore-next-line:forin
-								for (const i in inputs[0]) {
-									if (i !== 'id') {
-										obj[i] = inputs[0][i];
-									}
-								}
-
-								return obj.save();
-							}
-						).then(
-							(result) => {
-								res.send(JSON.stringify(result, censor(result)));
-							}
-						).catch((err) => {
-							console.error(err);
-							res.status(500).send(JSON.stringify({
-								message: 'An error has occured, check the logs'
-							}));
-						});
-					}
+					this.handleSave(res, inputs, object);
 				} else if (url[1] === 'delete') {
-					object.findById(inputs[0]).then((obj: BaseContract) => {
-						return object.delete(obj).then(() => res.status(200).send());
-					}).catch((err) => {
-						console.error(err);
-						res.status(500).send(JSON.stringify({
-							message: 'An error has occured, check the logs'
-						}));
-					});
+					this.handleDelete(res, inputs, object);
+				} else if (url[1] === 'setRelated') {
+					this.handleSetRelated(res, inputs, object);
+				} else if (url[1] === 'fetchOne') {
+					this.handleFetchOne(res, inputs, object);
 				} else {
 					// TODO: security sanitization of inputs
 					Promise.resolve(action.apply(object, inputs)).then(
 						(result) => {
-							res.send(JSON.stringify(result, censor(result)));
+							res.send(JSON.stringify(result || {}));
 						}
-					).catch((err) => {
-						console.error(err);
-						res.status(500).send(JSON.stringify({
-							message: 'An error has occured, check the logs'
-						}));
-					});
+					).catch(this.return500.bind(this, res));
 				}
 			}
 		}
+	}
+
+	private handleSave(res, inputs, object) {
+		if (inputs[0] === undefined || inputs[0].id === undefined) {
+			res.status(412).send(JSON.stringify({
+				message: 'You must send an object with an id property'
+			}));
+		} else {
+			object.findById(inputs[0].id).then(
+				(obj: BaseContract) => {
+					// tsline:ignore-next-line:forin
+					for (const i in inputs[0]) {
+						if (i !== 'id') {
+							obj[i] = inputs[0][i];
+						}
+					}
+
+					return obj.save();
+				}
+			).then(
+				(result) => {
+					res.send(JSON.stringify(result, censor(result)));
+				}
+			).catch(this.return500.bind(this, res));
+		}
+	}
+
+	private handleDelete(res, inputs, object) {
+		object.findById(inputs[0]).then((obj: BaseContract) => {
+			return object.delete(obj).then(() => res.status(200).send());
+		}).catch(this.return500.bind(this, res));
+	}
+
+	private handleSetRelated(res, inputs, object: BaseConnection<BaseContract>) {
+		const cls2 = fetchables[inputs[3]];
+		const object2: BaseConnection<BaseContract> = this.injector.get(cls2);
+
+		Promise.all([
+			object.findById(inputs[0]),
+			object2.findById(inputs[1])
+		]).then((objs: BaseContract[]) => {
+			return object.setRelated(objs[0], objs[1], inputs[2], object2.getContract()).then(() => res.status(200).send({}));
+		}).catch(this.return500.bind(this, res));
+	}
+
+	private handleFetchOne(res, inputs, object: BaseConnection<BaseContract>) {
+		object.findById(inputs[0]).then((obj: BaseContract) => {
+			return (<ForeignKey<BaseContract>> obj[inputs[1]]).fetch();
+		}).then((data) => res.status(200).send(data)).catch(this.return500.bind(this, res));
+	}
+
+	private return500(res, err) {
+		console.error(err);
+		res.status(500).send(JSON.stringify({
+			message: 'An error has occured, check the logs'
+		}));
 	}
 }

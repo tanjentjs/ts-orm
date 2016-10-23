@@ -1,5 +1,5 @@
 import {ConnectionWorker} from "../shared/ConnectionWorker";
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, Injector } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
@@ -8,6 +8,7 @@ import { BaseConnection } from "../shared/BaseConnection";
 import { BaseContractConstruct, BaseContract } from "../shared/BaseContract";
 import { WhereOptions } from "../shared/WhereTypes";
 import {API_BASE} from "../shared/index";
+import {fetchables} from "../shared/Fetchable";
 
 export interface IStorage {
 	data: any;
@@ -17,7 +18,8 @@ export interface IStorage {
 export class HttpConnectionWorker extends ConnectionWorker {
 	constructor (
 		private http: Http,
-		@Inject(API_BASE) private API_BASE: string
+		@Inject(API_BASE) private API_BASE: string,
+		private injector: Injector
 	) { super(); }
 
 	// TODO: figure out the typing for initial
@@ -96,6 +98,69 @@ export class HttpConnectionWorker extends ConnectionWorker {
 	): Promise<T> {
 		return (<any> this.http)
 			.post(this.API_BASE + '/' + this.getName(type) + '/findById', [id])
+			.map((data: Response) => data.json())
+			.map(this.createContractFn(parent, type))
+			.toPromise();
+	}
+
+	public fetchMany<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U[]> {}
+
+	public fetchOne<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<T>,
+		field: string,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U> {
+		return (<any> this.http)
+			.post(this.API_BASE + '/' + this.getName(type) + '/fetchOne', [
+				contract.id,
+				field
+			])
+			.map((data: Response) => data.json())
+			.map(this.createContractFn(
+				this.injector.get(fetchables[this.getName(destType)]),
+				destType
+			))
+			.toPromise();
+	}
+
+	public addRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		addContract: U,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void> {}
+
+	public removeRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		remContract: U,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void> {}
+
+	public setRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		setContract: U,
+		field: string,
+		destType: BaseContractConstruct<T>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void> {
+		return (<any> this.http)
+			.post(this.API_BASE + '/' + this.getName(type) + '/setRelated', [
+				contract.id,
+				setContract.id,
+				field,
+				this.getName(destType)
+			])
 			.map((data: Response) => data.json())
 			.map(this.createContractFn(parent, type))
 			.toPromise();
