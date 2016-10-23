@@ -1,4 +1,4 @@
-import * as http from 'http';
+import * as express from 'express';
 import {Injector, Inject} from '@angular/core';
 import {API_BASE} from '../shared/index';
 import {fetchables} from '../shared/Fetchable';
@@ -6,36 +6,20 @@ import {BaseConnection} from "../shared/BaseConnection";
 import {BaseContract} from "../shared/BaseContract";
 import {ForeignKey} from "../shared/ForeignKey";
 
-function censor(censor) {
-	var i = 0;
-
-	return function(key, value) {
-		if(i !== 0 && typeof(censor) === 'object' && typeof(value) == 'object' && censor == value)
-			return '[Circular]';
-
-		if(i >= 29) // seems to be a harded maximum of 30 serialized objects?
-			return '[Unknown]';
-
-		++i; // so we know we aren't using the original object anymore
-
-		return value;
-	}
-}
-
 export class ApiHandler {
 	constructor(
 		private injector: Injector,
 		@Inject(API_BASE) private API_BASE: string
 	) { /* */ }
 
-	public handle(req: http.Request, res: http.Response) {
+	public handle(req: express.Request, res: express.Response) {
 		if (req.method !== 'POST') {
 			res.status(401).send(JSON.stringify({
 				message: 'You must use post when interacting with this api'
 			}));
 			return;
 		}
-		let url = req.baseUrl;
+		let url: string | string[] = req.baseUrl;
 		if (url.substring(0, this.API_BASE.length) === this.API_BASE) {
 			url = url.substring(this.API_BASE.length).replace(/^[/]/, '');
 		}
@@ -99,7 +83,7 @@ export class ApiHandler {
 				}
 			).then(
 				(result) => {
-					res.send(JSON.stringify(result, censor(result)));
+					res.send(JSON.stringify(result));
 				}
 			).catch(this.return500.bind(this, res));
 		}

@@ -106,6 +106,7 @@ export class HttpConnectionWorker extends ConnectionWorker {
 	public fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		destType: BaseContractConstruct<T>,
+		remoteFeld: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<U[]> {}
@@ -130,9 +131,18 @@ export class HttpConnectionWorker extends ConnectionWorker {
 			.toPromise();
 	}
 
+	public fetchOneRemote<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<T>,
+		field: string,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U> {}
+
 	public addRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		addContract: U,
+		remoteFeld: string,
 		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -141,6 +151,7 @@ export class HttpConnectionWorker extends ConnectionWorker {
 	public removeRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		remContract: U,
+		remoteFeld: string,
 		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>

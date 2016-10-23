@@ -3,6 +3,7 @@ import {BaseConnection} from "./BaseConnection";
 import {BaseContractConstruct} from "./BaseContract";
 import {RemoteKeys} from "./RemoteKeys";
 import {ForeignKey} from "./ForeignKey";
+import {RemoteKey} from "./RemoteKey";
 
 let appRoot: string[] = null;
 
@@ -56,8 +57,9 @@ export interface IFieldConfig {
 	related?: () => BaseContractConstruct<any>;
 	unique?: boolean;
 	allowNull?: boolean;
-	// TODO: Make this match the dataatype of the field
+	// TODO: Make this match the datatype of the field
 	defaultValue?: any;
+	remoteField?: any;
 }
 
 export function Field(config?: IFieldConfig) {
@@ -111,30 +113,44 @@ export function Field(config?: IFieldConfig) {
 
 			switch (config.type) {
 				case Types.remoteKeys:
-					let value: RemoteKeys = null;
+					let remoteValues: RemoteKeys<any> = null;
 					// Create new property with getter and setter
 					Object.defineProperty(target, propertyName, {
 						configurable: false,
 						enumerable: true,
 						get: function () {
-							if (!value) {
-								value = new RemoteKeys(this, this.parent, config.related());
+							if (!remoteValues) {
+								remoteValues = new RemoteKeys<any>(this, this.parent, config.remoteField, config.related());
 							}
-							return value;
+							return remoteValues;
+						}
+					});
+					break;
+				case Types.remoteKey:
+					let remoteValue: RemoteKey<any> = null;
+					// Create new property with getter and setter
+					Object.defineProperty(target, propertyName, {
+						configurable: false,
+						enumerable: true,
+						get: function () {
+							if (!remoteValue) {
+								remoteValue = new RemoteKey<any>(this, this.parent, config.remoteField, config.related());
+							}
+							return remoteValue;
 						}
 					});
 					break;
 				case Types.foreignKey:
-					let value: ForeignKey = null;
+					let foreignValue: ForeignKey<any> = null;
 					// Create new property with getter and setter
 					Object.defineProperty(target, propertyName, {
 						configurable: false,
 						enumerable: true,
 						get: function () {
-							if (!value) {
-								value = new ForeignKey(this, this.parent, propertyName, config.related());
+							if (!foreignValue) {
+								foreignValue = new ForeignKey(this, this.parent, propertyName, config.related());
 							}
-							return value;
+							return foreignValue;
 						}
 					});
 					break;

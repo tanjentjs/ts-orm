@@ -1,4 +1,5 @@
 import {BaseContract} from "./BaseContract";
+import {BaseConnection} from "./BaseConnection";
 
 export class ForeignKey<T extends BaseContract> {
 	constructor(

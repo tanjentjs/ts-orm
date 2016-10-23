@@ -8,7 +8,8 @@
 		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"removeComments": false
+		"removeComments": false,
+		"types" : ["node", "core-js", "bluebird", "reflect-metadata"]
 	},
 	"exclude": [
 		"node_modules"

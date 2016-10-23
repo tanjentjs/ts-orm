@@ -19,7 +19,7 @@ export abstract  class BaseContract {
 
 	public toJSON() {
 		const fields: IFieldConfig[] = Reflect.getMetadata('fields', this.constructor);
-		const ret = {};
+		const ret: any = {};
 		// tslint:ignore-next-line:forin
 		for (const i in fields) {
 			if (

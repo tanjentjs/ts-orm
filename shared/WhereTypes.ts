@@ -18,8 +18,8 @@ export interface WhereOptions<T> {
 }
 
 export interface FieldWhereOptions<T> {
-	$ne: T | WhereLogic<T>;
-	$in: Array<T> | literal;
+	$ne: T | FieldWhereOptions<T>;
+	$in: Array<T> | Literal<T>;
 	$not: T;
 	$notIn: Array<T>;
 	$gte: T;
@@ -41,9 +41,13 @@ export interface FieldWhereOptions<T> {
 	// TODO: End hide these for string types
 }
 
+export interface Literal<T> {
+	val: T;
+}
+
 export type And<T> = FieldWhereOptions<T>
 
 export interface Or<T> {
-	$or: FieldWhereOptions;
+	$or: FieldWhereOptions<T>;
 }
 

@@ -12,8 +12,8 @@ import {fetchables} from "../shared/Fetchable";
 export type SaveOptions = Sequelize.InstanceSaveOptions;
 
 export interface IStorage {
-	model: Sequelize.Model;
-	instance: Sequelize.Instance;
+	model: Sequelize.Model<any, any>;
+	instance: Sequelize.Instance<any>;
 }
 
 let sequelize: Sequelize.Sequelize;
@@ -31,7 +31,7 @@ export function connect(
 export class SequelizeConnectionWorker extends ConnectionWorker {
 	private models = {};
 
-	constructor(private injector: Injector) {}
+	constructor(private injector: Injector) { super(); }
 
 	// TODO: figure out the typing for initial
 	public create<T extends BaseContract>(
@@ -82,8 +82,8 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	): Promise<T[]> {
 		return this.getModel(type)
 			.then((model) => model.findAll(where))
-			.then((instances: Sequelize.Instance[]) => {
-				const ret: T[] = [];
+			.then((instances: Sequelize.Instance<any>[]) => {
+				const ret: Promise<T>[] = [];
 				const createContract = this.createContractFn(parent, type);
 
 				// tslint:disable-next-line:forin
@@ -99,7 +99,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		id: number,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<T[]> {
+	): Promise<T> {
 		return this.getModel(type)
 			.then((model) => model.findById(id))
 			.then(this.createContractFn(parent, type));
@@ -108,6 +108,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	public fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		destType: BaseContractConstruct<U>,
+		remoteField: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<U[]> {}
@@ -127,9 +128,18 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 			));
 	}
 
+	public fetchOneRemote<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<T>,
+		field: string,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U> {}
+
 	public addRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		addContract: U,
+		remoteField: string,
 		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -138,6 +148,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	public removeRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		remContract: U,
+		remoteField: string,
 		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -163,8 +174,8 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		return (<IStorage> contract._connectionStorage).instance[field] = value;
 	}
 
-	private updateContractFn<T extends BaseContract>(contract: T): (newInstance: Sequelize.Instance) => T {
-		return (newInstance: Sequelize.Instance): T => {
+	private updateContractFn<T extends BaseContract>(contract: T): (newInstance: Sequelize.Instance<any>) => T {
+		return (newInstance: Sequelize.Instance<any>): T => {
 			(<IStorage> contract._connectionStorage).instance = newInstance;
 			return contract;
 		};
@@ -173,22 +184,22 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	private createContractFn<T extends BaseContract>(
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): (newInstance: Sequelize.Instance) => Promise<T> {
-		return (newInstance: Sequelize.Instance) => {
+	): (newInstance: Sequelize.Instance<any>) => Promise<T> {
+		return (newInstance: Sequelize.Instance<any>) => {
 			if (!newInstance) {
-				return Promise.reject('Failed to find instance! (' + parent.constructor.name + ')');
+				return <any> Promise.reject('Failed to find instance! (' + parent.constructor.name + ')');
 			} else {
 				const ret = new type(parent);
 				(<IStorage> ret._connectionStorage).instance = newInstance;
 				return this.getModel(type).then((model) => {
 					(<IStorage> ret._connectionStorage).model = model;
 					return ret;
-				};
+				});
 			}
 		};
 	}
 
-	private getModel<T extends BaseContract>(type: BaseContractConstruct<T>): Promise<Sequelize.Model> {
+	private getModel<T extends BaseContract>(type: BaseContractConstruct<T>): Promise<Sequelize.Model<any, any>> {
 		if (!this.models[this.getName(type)]) {
 			const fields: IFieldConfig[] = Reflect.getMetadata('fields', type) || {};
 			const sequelizeFields = {};
@@ -204,9 +215,9 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 						break;
 					case Types.foreignKey:
 						relatedPromises.push(this.getModel(fields[i].related())
-							.then((relatedModel: Sequelize.Model) => {
+							.then((relatedModel: Sequelize.Model<any, any>) => {
 								sequelizeFields[i] = {
-									type: Sequelize.DataTypes.INTEGER,
+									type: Sequelize.INTEGER,
 									references: relatedModel.getTableName(),
 									referencesKey: "id"
 								};

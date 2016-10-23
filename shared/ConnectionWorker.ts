@@ -36,10 +36,11 @@ export abstract class ConnectionWorker {
 		id: number,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<T[]>;
+	): Promise<T>;
 	public abstract fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		destType: BaseContractConstruct<T>,
+		remoteFeld: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<U[]>;
@@ -50,9 +51,17 @@ export abstract class ConnectionWorker {
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<U>;
+	public abstract fetchOneRemote<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		destType: BaseContractConstruct<U>,
+		field: string,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<U>;
 	public abstract addRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		addContract: U,
+		remoteFeld: string,
 		destType: BaseContractConstruct<U>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -60,6 +69,7 @@ export abstract class ConnectionWorker {
 	public abstract removeRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		remContract: U,
+		remoteFeld: string,
 		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
