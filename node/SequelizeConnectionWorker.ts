@@ -216,7 +216,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 			const sequelizeFields = {};
 			const relatedPromises = [];
 
-			// tslint:ignore-next-line:forin
+			// tslint:disable-next-line:forin
 			for (const i in fields) {
 				sequelizeFields[i] = {};
 

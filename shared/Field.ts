@@ -16,7 +16,7 @@ export function setAppRoot(root: string | string[]) {
 }
 
 function extractPath(stackLine: string) {
-	let splitStack = stackLine.split(':')
+	let splitStack = stackLine.split(':');
 	let path = splitStack.splice(0, splitStack.length - 2).join(':');
 	if (path.match(/\(/)) {
 		path = path.split('(')[1];

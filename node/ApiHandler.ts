@@ -1,17 +1,20 @@
 import * as express from 'express';
-import {Injector, Inject} from '@angular/core';
+import {Injector, Inject, Injectable} from '@angular/core';
 import {API_BASE} from '../shared/index';
 import {fetchables} from '../shared/Fetchable';
-import {BaseConnection} from "../shared/BaseConnection";
-import {BaseContract} from "../shared/BaseContract";
-import {ForeignKey} from "../shared/ForeignKey";
-import {RemoteKeys} from "../shared/RemoteKeys";
-import {RemoteKey} from "../shared/RemoteKey";
+import {BaseConnection} from '../shared/BaseConnection';
+import {BaseContract} from '../shared/BaseContract';
+import {ForeignKey} from '../shared/ForeignKey';
+import {RemoteKeys} from '../shared/RemoteKeys';
+import {RemoteKey} from '../shared/RemoteKey';
+import {Logger} from '../shared/Logger';
 
+@Injectable()
 export class ApiHandler {
 	constructor(
 		private injector: Injector,
-		@Inject(API_BASE) private API_BASE: string
+		@Inject(API_BASE) private API_BASE: string,
+		@Inject(Logger) private logger: Logger
 	) { /* */ }
 
 	public handle(req: express.Request, res: express.Response) {
@@ -132,7 +135,7 @@ export class ApiHandler {
 	}
 
 	private return500(res, err) {
-		console.error(err);
+		this.logger.error(err);
 		res.status(500).send(JSON.stringify({
 			message: 'An error has occured, check the logs'
 		}));

@@ -46,7 +46,12 @@ export abstract class BaseConnection<T extends BaseContract> {
 		return this.worker.addRelated(contract, addContract, remoteFeld, destType, this, this.getContract());
 	}
 
-	public removeRelated<U extends BaseContract>(contract: T, remContract: U, destType, remoteFeld: string): Promise<void> {
+	public removeRelated<U extends BaseContract>(
+		contract: T,
+		remContract: U,
+		destType,
+		remoteFeld: string
+	): Promise<void> {
 		return this.worker.removeRelated(contract, remContract, remoteFeld, destType, this, this.getContract());
 	}
 

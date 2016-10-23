@@ -50,4 +50,3 @@ export type And<T> = FieldWhereOptions<T>
 export interface Or<T> {
 	$or: FieldWhereOptions<T>;
 }
-
