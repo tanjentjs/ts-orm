@@ -214,9 +214,21 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 						break;
 					case Types.remoteKeys:
 						delete sequelizeFields[i];
-						break; // The one side does not contain the config info
+						continue; // The one side does not contain the config info
 					default:
 						throw new Error(fields[i].type + ' is not supported');
+				}
+
+				if (fields[i].unique) {
+					sequelizeFields[i].unique = true;
+				}
+
+				if (fields[i].allowNull === false) {
+					sequelizeFields[i].allowNull = false;
+				}
+
+				if (fields[i].defaultValue) {
+					sequelizeFields[i].defaultValue = fields[i].defaultValue;
 				}
 			}
 

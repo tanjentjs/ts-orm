@@ -54,6 +54,10 @@ function stripAppRoot(path) {
 export interface IFieldConfig {
 	type?: Types;
 	related?: () => BaseContractConstruct<any>;
+	unique?: boolean;
+	allowNull?: boolean;
+	// TODO: Make this match the dataatype of the field
+	defaultValue?: any;
 }
 
 export function Field(config?: IFieldConfig) {
