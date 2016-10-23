@@ -120,7 +120,7 @@ export function Field(config?: IFieldConfig) {
 						enumerable: true,
 						get: function () {
 							if (!remoteValues) {
-								remoteValues = new RemoteKeys<any>(this, this.parent, config.remoteField, config.related());
+								remoteValues = new RemoteKeys<any>(this, this.parent, propertyName, config.remoteField, config.related());
 							}
 							return remoteValues;
 						}
@@ -134,7 +134,7 @@ export function Field(config?: IFieldConfig) {
 						enumerable: true,
 						get: function () {
 							if (!remoteValue) {
-								remoteValue = new RemoteKey<any>(this, this.parent, config.remoteField, config.related());
+								remoteValue = new RemoteKey<any>(this, this.parent, propertyName, config.remoteField, config.related());
 							}
 							return remoteValue;
 						}

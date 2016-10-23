@@ -39,7 +39,8 @@ export abstract class ConnectionWorker {
 	): Promise<T>;
 	public abstract fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
+		field: string,
 		remoteFeld: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -55,33 +56,41 @@ export abstract class ConnectionWorker {
 		contract: T,
 		destType: BaseContractConstruct<U>,
 		field: string,
+		remoteField: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<U>;
-	public abstract addRelated<T extends BaseContract, U extends BaseContract>(
+	public abstract setRelated<T extends BaseContract, U extends BaseContract>(
+		contract: T,
+		setContract: U,
+		field: string,
+		destType: BaseContractConstruct<U>,
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): Promise<void>;
+	public abstract getField<T extends BaseContract>(contract: T, field: string): any;
+	public abstract setField<T extends BaseContract>(contract: T, field: string, value: any): any;
+
+	public addRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		addContract: U,
 		remoteFeld: string,
 		destType: BaseContractConstruct<U>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<void>;
-	public abstract removeRelated<T extends BaseContract, U extends BaseContract>(
+	): Promise<void> {
+		addContract[remoteFeld] = contract;
+		return addContract.save().then(() => { /* */ });
+	}
+	public removeRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		remContract: U,
 		remoteFeld: string,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<void>;
-	public abstract setRelated<T extends BaseContract, U extends BaseContract>(
-		contract: T,
-		setContract: U,
-		field: string,
-		destType: BaseContractConstruct<T>,
-		parent: BaseConnection<T>,
-		type: BaseContractConstruct<T>
-	): Promise<void>;
-	public abstract getField<T extends BaseContract>(contract: T, field: string): any;
-	public abstract setField<T extends BaseContract>(contract: T, field: string, value: any): any;
+	): Promise<void> {
+		remContract[remoteFeld] = null;
+		return remContract.save().then(() => { /* */ });
+	}
 }

@@ -5,6 +5,8 @@ import {fetchables} from '../shared/Fetchable';
 import {BaseConnection} from "../shared/BaseConnection";
 import {BaseContract} from "../shared/BaseContract";
 import {ForeignKey} from "../shared/ForeignKey";
+import {RemoteKeys} from "../shared/RemoteKeys";
+import {RemoteKey} from "../shared/RemoteKey";
 
 export class ApiHandler {
 	constructor(
@@ -52,6 +54,10 @@ export class ApiHandler {
 					this.handleSetRelated(res, inputs, object);
 				} else if (url[1] === 'fetchOne') {
 					this.handleFetchOne(res, inputs, object);
+				} else if (url[1] === 'fetchOneRemote') {
+					this.handleFetchOneRemote(res, inputs, object);
+				} else if (url[1] === 'fetchMany') {
+					this.handleFetchMany(res, inputs, object);
 				} else {
 					// TODO: security sanitization of inputs
 					Promise.resolve(action.apply(object, inputs)).then(
@@ -110,6 +116,18 @@ export class ApiHandler {
 	private handleFetchOne(res, inputs, object: BaseConnection<BaseContract>) {
 		object.findById(inputs[0]).then((obj: BaseContract) => {
 			return (<ForeignKey<BaseContract>> obj[inputs[1]]).fetch();
+		}).then((data) => res.status(200).send(data)).catch(this.return500.bind(this, res));
+	}
+
+	private handleFetchMany(res, inputs, object: BaseConnection<BaseContract>) {
+		object.findById(inputs[0]).then((obj: BaseContract) => {
+			return (<RemoteKeys<BaseContract>> obj[inputs[1]]).fetch();
+		}).then((data) => res.status(200).send(data)).catch(this.return500.bind(this, res));
+	}
+
+	private handleFetchOneRemote(res, inputs, object: BaseConnection<BaseContract>) {
+		object.findById(inputs[0]).then((obj: BaseContract) => {
+			return (<RemoteKey<BaseContract>> obj[inputs[1]]).fetch();
 		}).then((data) => res.status(200).send(data)).catch(this.return500.bind(this, res));
 	}
 

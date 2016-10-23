@@ -82,17 +82,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	): Promise<T[]> {
 		return this.getModel(type)
 			.then((model) => model.findAll(where))
-			.then((instances: Sequelize.Instance<any>[]) => {
-				const ret: Promise<T>[] = [];
-				const createContract = this.createContractFn(parent, type);
-
-				// tslint:disable-next-line:forin
-				for (const i in instances) {
-					ret.push(createContract(instances[i]));
-				}
-
-				return Promise.all(ret);
-			});
+			.then(this.createContractArrayFn(parent, type));
 	}
 
 	public findById<T extends BaseContract>(
@@ -108,10 +98,21 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	public fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		destType: BaseContractConstruct<U>,
+		field: string,
 		remoteField: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<U[]> {}
+	): Promise<U[]> {
+		const search: any = {};
+		search[remoteField] = contract.id;
+
+		return this.getModel(destType)
+			.then((model) => model.findAll(search))
+			.then(this.createContractArrayFn(
+				this.injector.get(fetchables[this.getName(destType)]),
+				destType
+			));
+	}
 
 	public fetchOne<T extends BaseContract, U extends BaseContract>(
 		contract: T,
@@ -130,35 +131,28 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 
 	public fetchOneRemote<T extends BaseContract, U extends BaseContract>(
 		contract: T,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		field: string,
-		parent: BaseConnection<T>,
-		type: BaseContractConstruct<T>
-	): Promise<U> {}
-
-	public addRelated<T extends BaseContract, U extends BaseContract>(
-		contract: T,
-		addContract: U,
 		remoteField: string,
-		destType: BaseContractConstruct<T>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<void> {}
+	): Promise<U> {
+		const search: any = {};
+		search[remoteField] = contract.id;
 
-	public removeRelated<T extends BaseContract, U extends BaseContract>(
-		contract: T,
-		remContract: U,
-		remoteField: string,
-		destType: BaseContractConstruct<T>,
-		parent: BaseConnection<T>,
-		type: BaseContractConstruct<T>
-	): Promise<void> {}
+		return this.getModel(destType)
+			.then((model) => model.find(search))
+			.then(this.createContractFn(
+				this.injector.get(fetchables[this.getName(destType)]),
+				destType
+			));
+	}
 
 	public setRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		setContract: U,
 		field: string,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<void> {
@@ -196,6 +190,23 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 					return ret;
 				});
 			}
+		};
+	}
+
+	private createContractArrayFn<T extends BaseContract>(
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): (newInstance: Sequelize.Instance<any>[]) => Promise<T[]> {
+		return (instances: Sequelize.Instance<any>[]) => {
+			const ret: Promise<T>[] = [];
+			const createContract = this.createContractFn(parent, type);
+
+			// tslint:disable-next-line:forin
+			for (const i in instances) {
+				ret.push(createContract(instances[i]));
+			}
+
+			return Promise.all(ret);
 		};
 	}
 

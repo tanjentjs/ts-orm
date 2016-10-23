@@ -77,17 +77,7 @@ export class HttpConnectionWorker extends ConnectionWorker {
 		return (<any> this.http)
 			.post(this.API_BASE + '/' + this.getName(type) + '/findAll', where)
 			.map((data: Response) => data.json())
-			.map((data: any[]) => {
-				const ret: T[] = [];
-				const createContract = this.createContractFn(parent, type);
-
-				// tslint:disable-next-line:forin
-				for (const i in data) {
-					ret.push(createContract(data[i]));
-				}
-
-				return ret;
-			})
+			.map(this.createContractArrayFn(parent, type))
 			.toPromise();
 	}
 
@@ -105,15 +95,28 @@ export class HttpConnectionWorker extends ConnectionWorker {
 
 	public fetchMany<T extends BaseContract, U extends BaseContract>(
 		contract: T,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
+		field: string,
 		remoteFeld: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<U[]> {}
+	): Promise<U[]> {
+		return (<any> this.http)
+			.post(this.API_BASE + '/' + this.getName(type) + '/fetchMany', [
+				contract.id,
+				field
+			])
+			.map((data: Response) => data.json())
+			.map(this.createContractArrayFn(
+				this.injector.get(fetchables[this.getName(destType)]),
+				destType
+			))
+			.toPromise();
+	}
 
 	public fetchOne<T extends BaseContract, U extends BaseContract>(
 		contract: T,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		field: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
@@ -133,35 +136,30 @@ export class HttpConnectionWorker extends ConnectionWorker {
 
 	public fetchOneRemote<T extends BaseContract, U extends BaseContract>(
 		contract: T,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		field: string,
+		remoteField: string,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
-	): Promise<U> {}
-
-	public addRelated<T extends BaseContract, U extends BaseContract>(
-		contract: T,
-		addContract: U,
-		remoteFeld: string,
-		destType: BaseContractConstruct<T>,
-		parent: BaseConnection<T>,
-		type: BaseContractConstruct<T>
-	): Promise<void> {}
-
-	public removeRelated<T extends BaseContract, U extends BaseContract>(
-		contract: T,
-		remContract: U,
-		remoteFeld: string,
-		destType: BaseContractConstruct<T>,
-		parent: BaseConnection<T>,
-		type: BaseContractConstruct<T>
-	): Promise<void> {}
+	): Promise<U> {
+		return (<any> this.http)
+			.post(this.API_BASE + '/' + this.getName(type) + '/fetchOneRemote', [
+				contract.id,
+				field
+			])
+			.map((data: Response) => data.json())
+			.map(this.createContractFn(
+				this.injector.get(fetchables[this.getName(destType)]),
+				destType
+			))
+			.toPromise();
+	}
 
 	public setRelated<T extends BaseContract, U extends BaseContract>(
 		contract: T,
 		setContract: U,
 		field: string,
-		destType: BaseContractConstruct<T>,
+		destType: BaseContractConstruct<U>,
 		parent: BaseConnection<T>,
 		type: BaseContractConstruct<T>
 	): Promise<void> {
@@ -195,6 +193,23 @@ export class HttpConnectionWorker extends ConnectionWorker {
 		return (data: any) => {
 			const ret = new type(parent);
 			(<IStorage> ret._connectionStorage).data = data;
+			return ret;
+		};
+	}
+
+	private createContractArrayFn<T extends BaseContract>(
+		parent: BaseConnection<T>,
+		type: BaseContractConstruct<T>
+	): (data: any[]) => T[] {
+		return (data: any[]) => {
+			const ret: T[] = [];
+			const createContract = this.createContractFn(parent, type);
+
+			// tslint:disable-next-line:forin
+			for (const i in data) {
+				ret.push(createContract(data[i]));
+			}
+
 			return ret;
 		};
 	}

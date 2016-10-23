@@ -30,16 +30,16 @@ export abstract class BaseConnection<T extends BaseContract> {
 		return this.worker.findById(id, this, this.getContract());
 	}
 
-	public fetchMany<U extends BaseContract>(contract: T, destType, remoteFeld: string): Promise<U[]> {
-		return this.worker.fetchMany(contract, destType, remoteFeld, this, this.getContract());
+	public fetchMany<U extends BaseContract>(contract: T, destType, field: string, remoteFeld: string): Promise<U[]> {
+		return this.worker.fetchMany(contract, destType, field, remoteFeld, this, this.getContract());
 	}
 
 	public fetchOne<U extends BaseContract>(contract: T, destType, field: string): Promise<U> {
 		return this.worker.fetchOne(contract, destType, field, this, this.getContract());
 	}
 
-	public fetchOneRemote<U extends BaseContract>(contract: T, destType, field: string): Promise<U> {
-		return this.worker.fetchOneRemote(contract, destType, field, this, this.getContract());
+	public fetchOneRemote<U extends BaseContract>(contract: T, destType, field: string, remoteField: string): Promise<U> {
+		return this.worker.fetchOneRemote(contract, destType, field, remoteField, this, this.getContract());
 	}
 
 	public addRelated<U extends BaseContract>(contract: T, addContract: U, destType, remoteFeld: string): Promise<void> {
