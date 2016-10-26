@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import * as Sequelize from 'sequelize';
 import {Injectable, Injector} from '@angular/core';
 
@@ -224,6 +225,15 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 					case Types.string:
 						sequelizeFields[i].type = Sequelize.STRING;
 						break;
+					case Types.float:
+						sequelizeFields[i].type = Sequelize.FLOAT;
+						break;
+					case Types.integer:
+						sequelizeFields[i].type = Sequelize.INTEGER;
+						break;
+					case Types.enum:
+						sequelizeFields[i].type = Sequelize.INTEGER;
+						break;
 					case Types.foreignKey:
 						relatedPromises.push(this.getModel(fields[i].related())
 							.then((relatedModel: Sequelize.Model<any, any>) => {
@@ -234,9 +244,10 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 								};
 							}));
 						break;
+					case Types.remoteKey:
 					case Types.remoteKeys:
 						delete sequelizeFields[i];
-						continue; // The one side does not contain the config info
+						continue; // The remote does not contain the config info
 					default:
 						throw new Error(fields[i].type + ' is not supported');
 				}

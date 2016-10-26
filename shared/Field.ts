@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {Types} from "./Types";
 import {BaseConnection} from "./BaseConnection";
 import {BaseContractConstruct} from "./BaseContract";
@@ -59,7 +60,7 @@ export interface IFieldConfig {
 	allowNull?: boolean;
 	// TODO: Make this match the datatype of the field
 	defaultValue?: any;
-	remoteField?: any;
+	remoteField?: string;
 }
 
 export function Field(config?: IFieldConfig) {
@@ -96,7 +97,9 @@ export function Field(config?: IFieldConfig) {
 				default:
 					if (jsType === RemoteKeys) {
 						config.type = Types.remoteKeys;
-					} else if (jsType === ForeignKey) {
+					} else if (jsType === RemoteKey) {
+						config.type = Types.remoteKey;
+					}else if (jsType === ForeignKey) {
 						config.type = Types.foreignKey;
 					} else {
 						throw new TypeError('Unknown js type found! ' + jsType.name);
@@ -104,9 +107,8 @@ export function Field(config?: IFieldConfig) {
 			}
 		}
 
-		const fields = Reflect.getMetadata('fields', target.constructor) || {};
+		const fields: IFieldConfig[] = Reflect.getMetadata('fields', target.constructor) || {};
 		fields[propertyName] = config;
-		Reflect.defineMetadata('fields', fields, target.constructor);
 
 		// Delete property.
 		if (delete target[propertyName]) {
@@ -168,5 +170,7 @@ export function Field(config?: IFieldConfig) {
 					});
 			}
 		}
+
+		Reflect.defineMetadata('fields', fields, target.constructor);
 	};
 }

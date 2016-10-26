@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {BaseConnection} from './BaseConnection';
 import {IFieldConfig} from "./Field";
 import {Types} from "./Types";
@@ -24,6 +25,7 @@ export abstract  class BaseContract {
 		for (const i in fields) {
 			if (
 				fields[i].type !== Types.foreignKey &&
+				fields[i].type !== Types.remoteKey &&
 				fields[i].type !== Types.remoteKeys
 			) {
 				ret[i] = this[i];

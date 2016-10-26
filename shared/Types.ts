@@ -4,6 +4,7 @@ export enum Types {
 	bigInt,
 	float,
 	dateTimeTz,
+	enum,
 	foreignKey,
 	remoteKeys,
 	remoteKey
