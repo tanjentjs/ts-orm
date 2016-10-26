@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {Types} from "./Types";
 import {BaseConnection} from "./BaseConnection";
 import {BaseContractConstruct} from "./BaseContract";

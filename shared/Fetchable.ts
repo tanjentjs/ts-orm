@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { Injectable } from '@angular/core';
 
 export const fetchables = {};

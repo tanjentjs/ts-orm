@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {ConnectionWorker} from "../shared/ConnectionWorker";
 import { Injectable, Inject, Injector } from '@angular/core';
 import { Http, Response } from '@angular/http';

@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import * as Sequelize from 'sequelize';
 import {Injectable, Injector} from '@angular/core';
 

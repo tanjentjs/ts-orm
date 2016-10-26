@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {BaseConnection} from './BaseConnection';
 import {IFieldConfig} from "./Field";
 import {Types} from "./Types";
