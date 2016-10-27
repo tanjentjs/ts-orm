@@ -71,7 +71,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		type: BaseContractConstruct<T>
 	): Promise<T> {
 		return this.getModel(type)
-			.then((model) => model.find(where))
+			.then((model) => model.find({where: where}))
 			.then(this.createContractFn(parent, type));
 	}
 
@@ -81,7 +81,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		type: BaseContractConstruct<T>
 	): Promise<T[]> {
 		return this.getModel(type)
-			.then((model) => model.findAll(where))
+			.then((model: Sequelize.Model<any, any>) => model.findAll({where: where}))
 			.then(this.createContractArrayFn(parent, type));
 	}
 
@@ -107,7 +107,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		search[remoteField] = contract.id;
 
 		return this.getModel(destType)
-			.then((model) => model.findAll(search))
+			.then((model) => model.findAll({where: search}))
 			.then(this.createContractArrayFn(
 				this.injector.get(fetchables[this.getName(destType)]),
 				destType
@@ -141,7 +141,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		search[remoteField] = contract.id;
 
 		return this.getModel(destType)
-			.then((model) => model.find(search))
+			.then((model: Sequelize.Model) => model.find({where: search}))
 			.then(this.createContractFn(
 				this.injector.get(fetchables[this.getName(destType)]),
 				destType
