@@ -59,6 +59,7 @@ export interface IFieldConfig {
 	allowNull?: boolean;
 	// TODO: Make this match the datatype of the field
 	defaultValue?: any;
+	length?: number;
 	remoteField?: string;
 }
 
@@ -91,13 +92,27 @@ export function Field(config?: IFieldConfig) {
 				case 'Number':
 					config.type = Types.float;
 					break;
+				case 'Boolean':
+					config.type = Types.integer;
+					config.length = 1;
+					break;
 				case 'Object':
 					throw new TypeError('Automatic mapping of Objects is unsupported');
 				default:
 					if (jsType === RemoteKeys) {
 						config.type = Types.remoteKeys;
+						if (!config.remoteField) {
+							throw new TypeError(
+								'RemoteKeys requires remoteField to be supplied to the field decorator. field:' + propertyName
+							);
+						}
 					} else if (jsType === RemoteKey) {
 						config.type = Types.remoteKey;
+						if (!config.remoteField) {
+							throw new TypeError(
+								'RemoteKey requires remoteField to be supplied to the field decorator. field:' + propertyName
+							);
+						}
 					}else if (jsType === ForeignKey) {
 						config.type = Types.foreignKey;
 					} else {
@@ -114,44 +129,53 @@ export function Field(config?: IFieldConfig) {
 
 			switch (config.type) {
 				case Types.remoteKeys:
-					let remoteValues: RemoteKeys<any> = null;
 					// Create new property with getter and setter
 					Object.defineProperty(target, propertyName, {
 						configurable: false,
 						enumerable: true,
 						get: function () {
-							if (!remoteValues) {
-								remoteValues = new RemoteKeys<any>(this, this.parent, propertyName, config.remoteField, config.related());
+							if (!this['_' + propertyName]) {
+								this['_' + propertyName] = new RemoteKeys<any>(
+									this,
+									this.parent,
+									propertyName,
+									config.remoteField,
+									config.related()
+								);
 							}
-							return remoteValues;
+							return this['_' + propertyName];
 						}
 					});
 					break;
 				case Types.remoteKey:
-					let remoteValue: RemoteKey<any> = null;
 					// Create new property with getter and setter
 					Object.defineProperty(target, propertyName, {
 						configurable: false,
 						enumerable: true,
 						get: function () {
-							if (!remoteValue) {
-								remoteValue = new RemoteKey<any>(this, this.parent, propertyName, config.remoteField, config.related());
+							if (!this['_' + propertyName]) {
+								this['_' + propertyName] = new RemoteKey<any>(
+									this,
+									this.parent,
+									propertyName,
+									config.remoteField,
+									config.related()
+								);
 							}
-							return remoteValue;
+							return this['_' + propertyName];
 						}
 					});
 					break;
 				case Types.foreignKey:
-					let foreignValue: ForeignKey<any> = null;
 					// Create new property with getter and setter
 					Object.defineProperty(target, propertyName, {
 						configurable: false,
 						enumerable: true,
 						get: function () {
-							if (!foreignValue) {
-								foreignValue = new ForeignKey(this, this.parent, propertyName, config.related());
+							if (!this['_' + propertyName]) {
+								this['_' + propertyName] = new ForeignKey(this, this.parent, propertyName, config.related());
 							}
-							return foreignValue;
+							return this['_' + propertyName];
 						}
 					});
 					break;

@@ -141,7 +141,7 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 		search[remoteField] = contract.id;
 
 		return this.getModel(destType)
-			.then((model: Sequelize.Model) => model.find({where: search}))
+			.then((model: Sequelize.Model<any, any>) => model.find({where: search}))
 			.then(this.createContractFn(
 				this.injector.get(fetchables[this.getName(destType)]),
 				destType
@@ -213,12 +213,12 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 	private getModel<T extends BaseContract>(type: BaseContractConstruct<T>): Promise<Sequelize.Model<any, any>> {
 		if (!this.models[this.getName(type)]) {
 			const fields: IFieldConfig[] = Reflect.getMetadata('fields', type) || {};
-			const sequelizeFields = {};
+			const sequelizeFields: any = <any> {};
 			const relatedPromises = [];
 
 			// tslint:disable-next-line:forin
 			for (const i in fields) {
-				sequelizeFields[i] = {};
+				sequelizeFields[i] = <any> {};
 
 				switch (fields[i].type) {
 					case Types.string:
@@ -228,7 +228,11 @@ export class SequelizeConnectionWorker extends ConnectionWorker {
 						sequelizeFields[i].type = Sequelize.FLOAT;
 						break;
 					case Types.integer:
-						sequelizeFields[i].type = Sequelize.INTEGER;
+						if (sequelizeFields.length) {
+							sequelizeFields[i].type = Sequelize.INTEGER(sequelizeFields.length);
+						} else {
+							sequelizeFields[i].type = Sequelize.INTEGER;
+						}
 						break;
 					case Types.enum:
 						sequelizeFields[i].type = Sequelize.INTEGER;

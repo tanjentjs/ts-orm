@@ -84,7 +84,13 @@ export class ApiHandler {
 					// tsline:ignore-next-line:forin
 					for (const i in inputs[0]) {
 						if (i !== 'id') {
-							obj[i] = inputs[0][i];
+							try {
+								obj[i] = inputs[0][i];
+							} catch (e) {
+								if (!(e instanceof TypeError)) {
+									throw e;
+								}
+							}
 						}
 					}
 

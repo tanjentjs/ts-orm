@@ -1,6 +1,7 @@
 import {BaseConnection} from './BaseConnection';
 import {IFieldConfig} from "./Field";
 import {Types} from "./Types";
+import {ForeignKey} from "./ForeignKey";
 
 export type BaseContractConstruct<T extends BaseContract> = new (parent: BaseConnection<T>) => T;
 
@@ -28,6 +29,8 @@ export abstract  class BaseContract {
 				fields[i].type !== Types.remoteKeys
 			) {
 				ret[i] = this[i];
+			} else if (fields[i].type === Types.foreignKey) {
+				ret[i] = (<ForeignKey<any>> this[i]).id;
 			}
 		}
 		ret.id = this.id;
