@@ -63,6 +63,8 @@ export class ApiHandler {
 					this.handleFetchMany(res, inputs, object);
 				} else {
 					// TODO: security sanitization of inputs
+					inputs.push(res);
+					inputs.push(req);
 					Promise.resolve(action.apply(object, inputs)).then(
 						(result) => {
 							res.send(JSON.stringify(result || {}));
