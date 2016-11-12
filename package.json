@@ -1,6 +1,6 @@
 {
   "name": "tanjentjs-ts-orm",
-  "version": "0.0.0",
+  "version": "0.2.4",
   "description": "An object relational model which uses typescript annotations to define the schema",
   "main": "index",
   "scripts": {

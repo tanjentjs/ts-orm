@@ -7,15 +7,19 @@ import {BaseContract} from '../shared/BaseContract';
 import {ForeignKey} from '../shared/ForeignKey';
 import {RemoteKeys} from '../shared/RemoteKeys';
 import {RemoteKey} from '../shared/RemoteKey';
-import {Logger} from '../shared/Logger';
+import {Logger, ILogger} from '../shared/Logger';
 
 @Injectable()
 export class ApiHandler {
+	private logger: ILogger;
+
 	constructor(
 		private injector: Injector,
 		@Inject(API_BASE) private API_BASE: string,
-		@Inject(Logger) private logger: Logger
-	) { /* */ }
+		@Inject(Logger) logger: Logger
+	) {
+		this.logger = logger.get('@tanjentjs/ts-orm/ApiHandler');
+	}
 
 	public handle(req: express.Request, res: express.Response) {
 		if (req.method !== 'POST') {
