@@ -61,6 +61,7 @@ export interface IFieldConfig {
 	defaultValue?: any;
 	length?: number;
 	remoteField?: string;
+	noApi?: boolean;
 }
 
 export function Field(config?: IFieldConfig) {

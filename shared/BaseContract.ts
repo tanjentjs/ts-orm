@@ -26,10 +26,11 @@ export abstract  class BaseContract {
 			if (
 				fields[i].type !== Types.foreignKey &&
 				fields[i].type !== Types.remoteKey &&
-				fields[i].type !== Types.remoteKeys
+				fields[i].type !== Types.remoteKeys &&
+				!fields[i].noApi
 			) {
 				ret[i] = this[i];
-			} else if (fields[i].type === Types.foreignKey) {
+			} else if (fields[i].type === Types.foreignKey && !fields[i].noApi) {
 				ret[i] = (<ForeignKey<any>> this[i]).id;
 			}
 		}
